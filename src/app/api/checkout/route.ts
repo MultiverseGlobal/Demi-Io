@@ -2,12 +2,16 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-    apiVersion: '2025-02-11' as any,
-});
-
 export async function POST(req: NextRequest) {
     try {
+        if (!process.env.STRIPE_SECRET_KEY) {
+            return NextResponse.json({ error: 'Stripe API key is not configured' }, { status: 500 });
+        }
+
+        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+            apiVersion: '2025-02-11' as any,
+        });
+
         const { planId, priceId } = await req.json();
 
         // 1. Get current user
