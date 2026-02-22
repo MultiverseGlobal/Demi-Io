@@ -8,7 +8,8 @@ import {
     Sparkles,
     Globe,
     ArrowRight,
-    Loader2
+    Loader2,
+    Info
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/lib/supabase";
