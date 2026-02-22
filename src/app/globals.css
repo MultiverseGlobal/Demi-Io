@@ -1,0 +1,196 @@
+@import "tailwindcss";
+
+@theme {
+  /* Default (Light) Mode */
+  --color-background: #ffffff;
+  --color-foreground: #09090b;
+
+  --color-card: #ffffff;
+  --color-card-foreground: #09090b;
+
+  --color-popover: #ffffff;
+  --color-popover-foreground: #09090b;
+
+  --color-primary: #8b5cf6;
+  --color-primary-foreground: #ffffff;
+
+  --color-secondary: #f4f4f5;
+  --color-secondary-foreground: #18181b;
+
+  --color-muted: #f4f4f5;
+  --color-muted-foreground: #71717a;
+
+  --color-accent: #f4f4f5;
+  --color-accent-foreground: #18181b;
+
+  --color-destructive: #ef4444;
+  --color-destructive-foreground: #fafafa;
+
+  --color-border: #e4e4e7;
+  --color-input: #e4e4e7;
+  --color-ring: #8b5cf6;
+
+  --radius-lg: 0.75rem;
+  --radius-md: calc(var(--radius-lg) - 2px);
+  --radius-sm: calc(var(--radius-lg) - 4px);
+
+  /* Fonts */
+  --font-cursive: var(--font-cursive), cursive;
+
+  /* Premium Gradients */
+  --bg-lovable-gradient: linear-gradient(135deg, #ff0080 0%, #7928ca 50%, #4299e1 100%);
+  --bg-gradient-suno: radial-gradient(circle at top center, #f8fafc 0%, #ffffff 100%);
+  --bg-accent-gradient: var(--bg-lovable-gradient);
+  --glass-gradient: linear-gradient(135deg, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.4));
+}
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme dark {
+  --color-background: #000000;
+  --color-foreground: #ffffff;
+
+  --color-card: #121212;
+  --color-card-foreground: #ffffff;
+
+  --color-popover: #121212;
+  --color-popover-foreground: #ffffff;
+
+  --color-primary: #ffffff;
+  --color-primary-foreground: #000000;
+
+  --color-secondary: #18181b;
+  --color-secondary-foreground: #ffffff;
+
+  --color-muted: #27272a;
+  --color-muted-foreground: #a1a1aa;
+
+  --color-accent: #27272a;
+  --color-accent-foreground: #ffffff;
+
+  --color-destructive: #7f1d1d;
+  --color-destructive-foreground: #ffffff;
+
+  --color-border: #27272a;
+  --color-input: #27272a;
+  --color-ring: #ffffff;
+
+  --bg-gradient-suno: linear-gradient(to bottom right, #000000, #121212);
+  --glass-gradient: linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01));
+}
+
+@layer base {
+
+  *,
+  ::after,
+  ::before {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased selection:bg-primary/30;
+    background-image: var(--bg-gradient-suno);
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+}
+
+@layer utilities {
+  .glass-card {
+    @apply relative overflow-hidden bg-white/[0.4] dark:bg-white/[0.03] backdrop-blur-2xl border border-black/5 dark:border-white/10;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.05);
+  }
+
+  .glass-card::before {
+    content: "";
+    @apply absolute inset-0 opacity-10 dark:opacity-20 pointer-events-none;
+    background: var(--glass-gradient);
+  }
+
+  .glass-button {
+    @apply relative px-6 py-3 rounded-xl font-bold transition-all duration-300 active:scale-95 border border-black/5 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 hover:bg-black/5 dark:hover:bg-white/10 backdrop-blur-md;
+  }
+
+  .lovable-card {
+    @apply bg-white/70 dark:bg-black/40 backdrop-blur-2xl border border-white/40 dark:border-white/10 transition-all duration-300;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.08);
+  }
+
+  .lovable-input {
+    @apply w-full bg-transparent border-none focus:ring-0 placeholder:text-muted-foreground/30 font-medium transition-all;
+  }
+
+  .text-gradient {
+    @apply bg-clip-text text-transparent;
+    background-image: var(--bg-accent-gradient);
+  }
+
+  h1,
+  h2,
+  h3,
+  .brand-font {
+    @apply font-cursive;
+  }
+
+  .suno-button {
+    @apply px-4 py-2 rounded-full font-semibold bg-white text-black hover:scale-105 transition-transform duration-200 active:scale-95;
+  }
+
+  .animate-slow-spin {
+    animation: spin 8s linear infinite;
+  }
+
+  .animate-pulse-slow {
+    animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  .mask-fade-out {
+    mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
+  }
+
+  textarea:focus {
+    background-color: transparent !important;
+    box-shadow: none !important;
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+
+@keyframes gradient-x {
+
+  0%,
+  100% {
+    background-size: 200% 200%;
+    background-position: left center;
+  }
+
+  50% {
+    background-size: 200% 200%;
+    background-position: right center;
+  }
+}
+
+.animate-gradient-x {
+  animation: gradient-x 15s ease infinite;
+}
