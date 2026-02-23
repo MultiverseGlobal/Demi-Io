@@ -10,12 +10,12 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Prompt is required' }, { status: 400 });
         }
 
-        const apiKey = process.env.OPENAI_API_KEY;
-        if (!apiKey) {
-            return NextResponse.json({ error: 'OpenAI API Key is missing' }, { status: 500 });
-        }
+        const openaiKey = process.env.OPENAI_API_KEY;
+        const geminiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
 
-        // 1. Generate Extension Content using Fetch (OpenAI API)
+        const preferredModel = (req.headers.get('x-preferred-model') || 'openai').toLowerCase();
+        let files: any;
+
         const systemPrompt = `You are an expert browser extension developer. 
 Your task is to generate the code for a Chrome Extension based on the user's request.
 Requirements:
@@ -37,33 +37,58 @@ Return the result as a raw JSON object with the following structure:
 }
 Do not include any other text before or after the JSON.`;
 
-        const response = await fetch('https://api.openai.com/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${apiKey}`
-            },
-            body: JSON.stringify({
-                model: "gpt-4o",
-                messages: [
-                    { role: "system", content: systemPrompt },
-                    { role: "user", content: `Generate a browser extension that: ${prompt}` }
-                ],
-                response_format: { type: "json_object" }
-            })
-        });
+        if (preferredModel === 'gemini' && geminiKey) {
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${geminiKey}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{
+                        parts: [{
+                            text: `${systemPrompt}\n\nUser Request: Generate a browser extension that: ${prompt}`
+                        }]
+                    }],
+                    generationConfig: {
+                        response_mime_type: "application/json",
+                    }
+                })
+            });
 
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error?.message || 'Failed to call OpenAI');
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error?.message || 'Failed to call Gemini');
+            }
+
+            const data = await response.json();
+            const resultText = data.candidates[0].content.parts[0].text;
+            files = JSON.parse(resultText).files;
+        } else if (openaiKey) {
+            const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${openaiKey}`
+                },
+                body: JSON.stringify({
+                    model: "gpt-4o",
+                    messages: [
+                        { role: "system", content: systemPrompt },
+                        { role: "user", content: `Generate a browser extension that: ${prompt}` }
+                    ],
+                    response_format: { type: "json_object" }
+                })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error?.message || 'Failed to call OpenAI');
+            }
+
+            const completion = await response.json();
+            const resultText = completion.choices[0].message.content;
+            files = JSON.parse(resultText).files;
+        } else {
+            throw new Error('No AI model configured');
         }
-
-        const completion = await response.json();
-        const resultText = completion.choices[0].message.content;
-        if (!resultText) throw new Error("No response from AI");
-
-        const result = JSON.parse(resultText);
-        const files = result.files;
 
         // 2. Create ZIP
         const zip = new JSZip();

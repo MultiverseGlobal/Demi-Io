@@ -1,20 +1,19 @@
 "use client";
 
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
-import { Sparkles, ArrowRight, Zap, Target, Chrome, Loader2, Play, Shield, Cpu, Globe, MessageSquare, Twitter, Github, Linkedin, Mail } from "lucide-react";
+import { Sparkles, Zap, Target, Chrome, Loader2, Shield, Cpu } from "lucide-react";
 import { useState, useRef } from "react";
 import { cn } from "@/lib/utils";
-import { Dashboard } from "@/components/Dashboard";
+import { Carousel } from "@/components/Carousel";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
 export default function Home() {
-  const [view, setView] = useState<"landing" | "loading" | "dashboard">("landing");
+  const [view, setView] = useState<"landing" | "loading">("landing");
   const [prompt, setPrompt] = useState("");
-  const [extensionData, setExtensionData] = useState<any>(null);
-  const [error, setError] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -24,57 +23,34 @@ export default function Home() {
   const opacity = useTransform(scrollYProgress, [0, 0.2], [1, 0]);
   const scale = useTransform(scrollYProgress, [0, 0.2], [1, 0.95]);
 
-  const examples = [
+  const carouselItems = [
     {
-      title: "Amazon Price Tracker",
-      description: "Highlight all prices on Amazon and show a total.",
-      icon: <Chrome className="w-5 h-5 text-blue-400" />,
-      color: "from-blue-500/20 to-transparent"
+      title: "Amazon Intelligence",
+      description: "Automatically tracks historical prices and suggests the best time to buy using localized data.",
+      icon: <Chrome />,
+      color: "from-blue-600 to-blue-400"
     },
     {
-      title: "AI Ad Blocker",
-      description: "Intelligently hide all elements with class 'ad-sidebar' or 'sponsored'.",
-      icon: <Zap className="w-5 h-5 text-yellow-400" />,
-      color: "from-yellow-500/20 to-transparent"
+      title: "Ad-Blocker Pro Max",
+      description: "Our AI engine identifies and removes sophisticated tracking scripts that traditional blockers miss.",
+      icon: <Zap />,
+      color: "from-yellow-600 to-orange-400"
     },
     {
-      title: "Smart Data Scraper",
-      description: "Extract list of links and copy to clipboard as JSON.",
-      icon: <Target className="w-5 h-5 text-purple-400" />,
-      color: "from-purple-500/20 to-transparent"
-    },
-  ];
-
-  const features = [
-    {
-      title: "Natural Language to Code",
-      description: "Our engine translates your plain English into optimized JavaScript and Manifest v3 logic.",
-      icon: <Cpu className="w-6 h-6" />,
-    },
-    {
-      title: "Instant Verification",
-      description: "Auto-validation of permissions and API calls to ensure your extension works out of the box.",
-      icon: <Shield className="w-6 h-6" />,
-    },
-    {
-      title: "Share with the World",
-      description: "Deploy to your team or the Chrome Web Store with one click using our simplified delivery system.",
-      icon: <Globe className="w-6 h-6" />,
+      title: "Data Extraction Suite",
+      description: "Turn any webpage into a structured JSON dataset with one click. Perfect for market researchers.",
+      icon: <Target />,
+      color: "from-purple-600 to-pink-400"
     }
   ];
-
-  const router = useRouter();
 
   const handleGenerate = async () => {
     if (!prompt.trim()) return;
     setView("loading");
-    setError(null);
 
     try {
       const { data: { session } } = await supabase.auth.getSession();
-
       if (session) {
-        // User is logged in -> Create Project directly
         const { data: project, error: projError } = await supabase
           .from('projects')
           .insert({
@@ -86,17 +62,13 @@ export default function Home() {
           .single();
 
         if (projError) throw projError;
-
-        // Redirect to Editor
         router.push(`/project/${project.id}?prompt=${encodeURIComponent(prompt)}`);
       } else {
-        // User is not logged in -> Redirect to Login with Prompt
         router.push(`/login?prompt=${encodeURIComponent(prompt)}`);
       }
     } catch (err: any) {
       console.error(err);
-      setError(err.message);
-      setView("landing"); // Go back to landing on error
+      setView("landing");
     }
   };
 
@@ -109,234 +81,187 @@ export default function Home() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="relative min-h-screen flex flex-col bg-background text-foreground"
+          className="relative min-h-screen flex flex-col bg-[#020202] text-white selection:bg-blue-500/30 overflow-x-hidden font-sans"
         >
-          {/* Lovable Background Vibe */}
-          <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1200px] h-[600px] bg-bg-lovable-gradient opacity-[0.15] dark:opacity-[0.1] blur-[160px] rounded-full" />
-
-            {/* Floating Orbs */}
-            <motion.div
-              animate={{ x: [0, 100, 0], y: [0, -50, 0] }}
-              transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-              className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-[100px]"
-            />
-            <motion.div
-              animate={{ x: [0, -100, 0], y: [0, 50, 0] }}
-              transition={{ duration: 25, repeat: Infinity, ease: "linear", delay: 2 }}
-              className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-[100px]"
-            />
-
-            <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-100 contrast-150" />
+          {/* Immersive Background */}
+          <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+            <div className="absolute top-[-20%] left-[-10%] w-[80%] h-[70%] bg-blue-600/10 blur-[160px] rounded-full animate-pulse" />
+            <div className="absolute bottom-[-20%] right-[-10%] w-[80%] h-[70%] bg-purple-600/10 blur-[160px] rounded-full" />
+            <div className="absolute inset-0 opacity-[0.03] mix-blend-overlay pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
+            <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:64px_64px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
           </div>
 
-          {/* Nav */}
-          <nav className="fixed top-0 w-full flex justify-between items-center p-6 lg:px-12 z-50 backdrop-blur-sm bg-background/50 border-b border-border">
-            <Link href="/" className="flex items-center gap-2.5 group">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white group-hover:scale-110 transition-transform shadow-lg shadow-primary/25">
-                <span className="font-bold">D</span>
+          {/* Dynamic Nav */}
+          <nav className="fixed top-0 w-full flex justify-between items-center py-6 px-8 md:px-16 z-50 backdrop-blur-xl border-b border-white/5 bg-black/20">
+            <Link href="/" className="flex items-center gap-3 group">
+              <div className="relative">
+                <div className="absolute -inset-2 bg-blue-500/40 blur-lg rounded-xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="relative w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center text-white font-black text-xl shadow-lg">
+                  D
+                </div>
               </div>
-              <span className="font-bold text-xl tracking-tight">Demi IO</span>
+              <span className="font-extrabold text-2xl tracking-tighter">DEMI <span className="text-blue-500">IO</span></span>
             </Link>
-            <div className="flex gap-4">
-              {/* Nav Links could go here */}
+
+            <div className="hidden md:flex items-center gap-8 text-sm font-bold text-neutral-400">
+              <a href="#" className="hover:text-white transition-colors">Showcase</a>
+              <a href="#" className="hover:text-white transition-colors">Pricing</a>
+              <a href="#" className="hover:text-white transition-colors">Docs</a>
+              <Link href="/login" className="px-6 py-2.5 bg-white text-black rounded-xl hover:bg-neutral-200 transition-all font-black">
+                Sign In
+              </Link>
             </div>
           </nav>
 
           {/* Hero Section */}
-          <section className="relative pt-32 pb-20 px-6 overflow-hidden">
-            <div className="max-w-5xl mx-auto text-center space-y-8 z-10 relative">
+          <section className="relative pt-48 pb-32 px-6 z-10">
+            <div className="max-w-6xl mx-auto text-center space-y-12">
 
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5 }}
-                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/50 border border-border/50 text-xs font-medium text-muted-foreground mb-4 hover:bg-secondary/80 transition-colors cursor-default"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-xs font-black text-blue-400 tracking-widest uppercase mb-4"
               >
-                <Sparkles className="w-3.5 h-3.5 text-primary animate-pulse" />
-                <span>v1.0 is now live</span>
+                <Sparkles className="w-4 h-4" />
+                <span>Next-Gen Extension Factory</span>
               </motion.div>
 
               <motion.h1
                 style={{ opacity, scale }}
-                className="text-6xl md:text-8xl font-black tracking-tighter leading-[0.9] text-foreground mix-blend-screen"
+                className="text-7xl md:text-[120px] font-black tracking-tighter leading-[0.85] text-white"
               >
-                Build browser extensions <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 animate-gradient-x">in plain English.</span>
+                Idea to extension <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-500 to-blue-600 animate-gradient-x">in plain English.</span>
               </motion.h1>
 
               <motion.p
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed"
+                className="text-xl md:text-2xl text-neutral-400 max-w-3xl mx-auto leading-relaxed font-medium"
               >
-                Demi converts your natural language descriptions into fully functional, deployed Chrome Extensions in seconds. No coding required.
+                Demi converts your natural language descriptions into fully functional, production-ready browser extensions. No code. No complexity.
               </motion.p>
 
-
-              {/* Premium Prompt Bar */}
+              {/* Ultra-Premium Prompt Bar */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.2 }}
-                className="relative group max-w-2xl mx-auto w-full"
+                className="relative group max-w-3xl mx-auto w-full mt-12"
               >
-                {/* Glowing Backlight */}
-                <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 opacity-30 group-focus-within:opacity-70 blur-xl transition-opacity duration-500 rounded-3xl" />
+                <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 via-purple-600 to-blue-500 opacity-20 group-focus-within:opacity-50 blur-2xl transition-opacity duration-700 rounded-[32px]" />
 
-                <div className="relative glass-card bg-black/40 backdrop-blur-3xl rounded-[28px] p-2 flex flex-col gap-2 border border-white/10 shadow-2xl group-focus-within:border-white/20 transition-all">
+                <div className="relative bg-[#0a0a0a]/80 backdrop-blur-3xl rounded-[32px] p-2 flex flex-col gap-2 border border-white/10 shadow-3xl group-focus-within:border-blue-500/50 transition-all">
                   <textarea
-                    placeholder="Describe a browser extension you want to build..."
-                    className="w-full bg-transparent text-lg md:text-xl p-4 resize-none min-h-[60px] max-h-[200px] outline-none placeholder:text-neutral-600 text-white leading-relaxed"
+                    placeholder="Describe your extension (e.g., 'A tool that sums up all prices on a page and saves to CSV')"
+                    className="w-full bg-transparent text-xl md:text-2xl p-6 resize-none min-h-[100px] outline-none placeholder:text-neutral-700 text-white leading-relaxed font-medium"
                     value={prompt}
                     onChange={(e) => setPrompt(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && (e.preventDefault(), handleGenerate())}
                   />
-                  <div className="flex items-center justify-between px-2 pb-2">
-                    <div className="flex gap-2">
-                      {/* Tags or options could go here */}
+                  <div className="flex items-center justify-between px-4 pb-4">
+                    <div className="flex gap-3">
+                      <div className="px-3 py-1 bg-white/5 rounded-lg border border-white/5 flex items-center gap-2 text-xs font-bold text-neutral-500">
+                        <Cpu className="w-3.5 h-3.5" />
+                        GPT-4o / Gemini
+                      </div>
                     </div>
                     <button
                       onClick={handleGenerate}
                       disabled={!prompt.trim()}
-                      className="group/btn relative inline-flex items-center gap-2 px-6 py-2.5 bg-white text-black rounded-xl font-bold text-sm hover:bg-neutral-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="group/btn relative inline-flex items-center gap-3 px-10 py-4 bg-blue-600 text-white rounded-2xl font-black text-lg hover:bg-blue-500 transition-all shadow-xl shadow-blue-500/20 active:scale-95 disabled:opacity-30"
                     >
-                      <Sparkles className="w-4 h-4 text-purple-600" />
-                      Generate
+                      <Sparkles className="w-5 h-5 text-white animate-pulse" />
+                      Build Extension
                     </button>
                   </div>
                 </div>
               </motion.div>
-
-              {/* Examples Sub-text */}
-              <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-4 text-xs font-medium text-neutral-500 pt-6">
-                <span className="opacity-50">Try these:</span>
-                {examples.map((ex, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setPrompt(ex.description)}
-                    className="hover:text-white transition-colors cursor-pointer flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/5 hover:bg-white/5"
-                  >
-                    {ex.icon}
-                    {ex.title}
-                  </button>
-                ))}
-              </div>
             </div>
           </section>
 
-          <section className="py-24 px-6 border-t border-white/5">
-            <div className="max-w-7xl mx-auto space-y-20">
+          {/* Interactive Showcase (Carousel) */}
+          <section className="py-24 px-6 relative z-10">
+            <div className="max-w-7xl mx-auto space-y-16">
               <div className="text-center space-y-4">
-                <h2 className="text-4xl md:text-5xl font-bold tracking-tight">How it works</h2>
-                <p className="text-neutral-400 text-lg">From thought to deployment in seconds.</p>
+                <h2 className="text-5xl font-black tracking-tight">Built with Demi.</h2>
+                <p className="text-neutral-400 text-xl font-medium">See what others are launching in seconds.</p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                {[
-                  { step: "01", title: "Describe", text: "Explain the behavior you want in plain text.", icon: <MessageSquare className="w-6 h-6 text-blue-400" /> },
-                  { step: "02", title: "Refine", text: "Use the smart editor to chat and iterate on the code.", icon: <Cpu className="w-6 h-6 text-purple-400" /> },
-                  { step: "03", title: "Deploy", text: "Download your ZIP and load it instantly.", icon: <Zap className="w-6 h-6 text-yellow-400" /> }
-                ].map((s, i) => (
-                  <div key={i} className="relative p-8 rounded-3xl bg-[#0f0f0f] border border-white/5 hover:border-white/10 transition-colors group">
-                    <div className="absolute top-8 right-8 text-6xl font-black text-white/5">{s.step}</div>
-                    <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center mb-6">
-                      {s.icon}
-                    </div>
-                    <h3 className="text-xl font-bold mb-3">{s.title}</h3>
-                    <p className="text-neutral-400 leading-relaxed">{s.text}</p>
-                  </div>
-                ))}
-              </div>
+              <Carousel items={carouselItems} />
             </div>
           </section>
 
-          {/* Performance Status Section */}
-          <section className="py-32 px-6">
-            <div className="max-w-7xl mx-auto rounded-[40px] p-12 md:p-20 flex flex-col md:flex-row items-center gap-20 bg-gradient-to-b from-[#0f0f0f] to-black border border-white/5">
-              <div className="flex-1 space-y-8">
-                <h2 className="text-5xl md:text-6xl font-bold tracking-tight leading-tight">Built for <br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">speed & precision.</span></h2>
-                <div className="space-y-6">
-                  <div className="flex items-center gap-6">
-                    <div className="w-12 h-12 rounded-full bg-green-500/10 flex items-center justify-center text-green-500">
-                      <Zap className="w-6 h-6" />
-                    </div>
-                    <div className="space-y-1">
-                      <h4 className="font-bold text-lg text-white">Instant Generation</h4>
-                      <p className="text-sm text-neutral-400">Complex logic compiled in sub-3 seconds.</p>
-                    </div>
+          {/* Feature Grid */}
+          <section className="py-32 px-6 relative z-10 border-t border-white/5 bg-white/[0.01]">
+            <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {[
+                { title: "Manifest v3 Native", description: "Fully compliant with latest security standards. Ready for the Web Store.", icon: <Shield className="text-green-400" /> },
+                { title: "Smart Logic Engine", description: "Complex context-aware generation for DOM manipulation and background tasks.", icon: <Cpu className="text-purple-400" /> },
+                { title: "One-Click Deploy", description: "Get your ZIP bundle instantly. Load it, test it, launch it.", icon: <Zap className="text-yellow-400" /> }
+              ].map((f, i) => (
+                <div key={i} className="p-10 rounded-[40px] bg-black/40 border border-white/5 hover:border-white/20 transition-all group">
+                  <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center mb-8 group-hover:scale-110 transition-transform">
+                    <div className="scale-150">{f.icon}</div>
                   </div>
-                  <div className="flex items-center gap-6">
-                    <div className="w-12 h-12 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500">
-                      <Target className="w-6 h-6" />
-                    </div>
-                    <div className="space-y-1">
-                      <h4 className="font-bold text-lg text-white">Model Selection</h4>
-                      <p className="text-sm text-neutral-400">Choose between Claude 3.5 Sonnet, GPT-4o, and more.</p>
-                    </div>
-                  </div>
+                  <h3 className="text-2xl font-extrabold mb-4">{f.title}</h3>
+                  <p className="text-neutral-500 leading-relaxed text-lg font-medium">{f.description}</p>
                 </div>
-              </div>
-              <div className="w-[300px] h-[300px] md:w-[400px] md:h-[400px] relative flex items-center justify-center">
-                <div className="absolute inset-0 bg-blue-600/10 blur-[100px] rounded-full" />
-                <div className="relative text-8xl font-black text-white/5 tracking-tighter">DEMI</div>
-              </div>
+              ))}
             </div>
           </section>
 
-          {/* Minimal Footer */}
-          <footer className="py-12 text-center text-neutral-600 text-xs font-medium uppercase tracking-widest border-t border-white/5">
-            <div className="flex justify-center gap-8 mb-4">
-              <a href="#" className="hover:text-white transition-colors">Documentation</a>
-              <a href="#" className="hover:text-white transition-colors">Privacy</a>
-              <a href="#" className="hover:text-white transition-colors">Twitter</a>
+          {/* Call to Action */}
+          <section className="py-40 px-6 relative z-10 overflow-hidden">
+            <div className="max-w-5xl mx-auto text-center space-y-12">
+              <h1 className="text-6xl md:text-8xl font-black tracking-tighter leading-tight">Ready to launch?</h1>
+              <button
+                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                className="px-12 py-6 bg-white text-black rounded-3xl font-black text-2xl hover:bg-neutral-200 transition-all shadow-2xl shadow-white/10 active:scale-95"
+              >
+                Start Building Now
+              </button>
             </div>
-            <p>© 2026 DEMI IO.</p>
-          </footer>
+          </section>
 
-        </motion.div>
-      )
-      }
-
-      {
-        view === "loading" && (
-          <motion.div
-            key="loading"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="h-screen w-full flex flex-col items-center justify-center bg-black"
-          >
-            <div className="relative mb-12">
-              <div className="absolute inset-0 bg-blue-500/20 blur-[100px] rounded-full" />
-              <div className="relative z-10 w-24 h-24 flex items-center justify-center">
-                <Loader2 className="w-12 h-12 text-blue-500 animate-spin" />
+          {/* Footer */}
+          <footer className="py-20 border-t border-white/5 bg-black/50 backdrop-blur-xl relative z-20">
+            <div className="max-w-7xl mx-auto px-12 flex flex-col md:flex-row justify-between items-center gap-12">
+              <div className="flex flex-col gap-4 items-center md:items-start">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-black">D</div>
+                  <span className="font-extrabold text-xl tracking-tighter uppercase">DEMI IO.</span>
+                </div>
+                <p className="text-neutral-600 text-sm font-bold">The AI Extension Factory of the Future.</p>
               </div>
+              <div className="flex gap-10 text-neutral-500 font-black text-sm uppercase tracking-widest">
+                <a href="#" className="hover:text-white transition-colors">Twitter</a>
+                <a href="#" className="hover:text-white transition-colors">GitHub</a>
+                <a href="#" className="hover:text-white transition-colors">Terms</a>
+              </div>
+              <p className="text-neutral-700 text-xs font-bold uppercase tracking-widest">© 2026 METAVERSE GLOBAL</p>
             </div>
-            <h2 className="text-3xl font-bold tracking-tight mb-2 text-white">Setting up your project...</h2>
-            <p className="text-neutral-500">Initializing workspace and selecting AI model</p>
-          </motion.div>
-        )
-      }
+          </footer>
+        </motion.div>
+      )}
 
-      {
-        view === "dashboard" && (
-          <motion.div
-            key="dashboard"
-            initial={{ opacity: 0, scale: 1.05 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            className="w-full h-full"
-          >
-            <Dashboard
-              prompt={prompt}
-              extensionData={extensionData}
-              onBack={() => setView("landing")}
-            />
-          </motion.div>
-        )
-      }
-    </AnimatePresence >
+      {view === "loading" && (
+        <motion.div
+          key="loading"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="h-screen w-full flex flex-col items-center justify-center bg-[#050505]"
+        >
+          <div className="relative mb-12">
+            <div className="absolute inset-0 bg-blue-600/30 blur-[100px] rounded-full animate-pulse" />
+            <Loader2 className="relative z-10 w-20 h-20 text-blue-500 animate-spin" />
+          </div>
+          <h2 className="text-4xl font-black tracking-tighter mb-4 text-white uppercase italic">Initializing Engine...</h2>
+          <p className="text-neutral-500 font-bold tracking-widest uppercase text-xs">Selecting best AI model for task</p>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
