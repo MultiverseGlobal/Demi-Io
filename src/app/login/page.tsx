@@ -89,126 +89,172 @@ function LoginContent() {
     };
 
     return (
-        <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-4 relative overflow-hidden">
+        <div className="min-h-screen bg-[#050505] text-foreground flex flex-col items-center justify-center p-6 relative overflow-hidden">
+            {/* Ultra-Premium Background Intelligence */}
             <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[500px] bg-bg-lovable-gradient opacity-[0.1] blur-[140px] rounded-full" />
-
+                {/* Primary Mesh Gradients */}
                 <motion.div
-                    animate={{ x: [0, 50, 0], y: [0, 30, 0] }}
-                    transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-                    className="absolute top-1/3 left-1/4 w-64 h-64 bg-primary/20 rounded-full blur-[80px]"
+                    animate={{
+                        scale: [1, 1.2, 1],
+                        rotate: [0, 45, 0],
+                        x: ['-10%', '10%', '-10%'],
+                        y: ['-10%', '5%', '-10%']
+                    }}
+                    transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+                    className="absolute -top-[20%] -left-[10%] w-[60%] h-[60%] bg-blue-600/30 rounded-full blur-[160px] opacity-40"
                 />
                 <motion.div
-                    animate={{ x: [0, -50, 0], y: [0, -30, 0] }}
-                    transition={{ duration: 18, repeat: Infinity, ease: "linear", delay: 1 }}
-                    className="absolute bottom-1/3 right-1/4 w-64 h-64 bg-blue-500/20 rounded-full blur-[80px]"
+                    animate={{
+                        scale: [1, 1.1, 1],
+                        rotate: [0, -45, 0],
+                        x: ['10%', '-10%', '10%'],
+                        y: ['10%', '-5%', '10%']
+                    }}
+                    transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                    className="absolute -bottom-[20%] -right-[10%] w-[60%] h-[60%] bg-purple-600/30 rounded-full blur-[160px] opacity-40 transition-colors"
                 />
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.05)_0%,transparent_70%)]" />
 
-                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-100 contrast-150" />
+                {/* Noise & Texture */}
+                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.05] brightness-100 contrast-150 mix-blend-overlay" />
             </div>
 
             <motion.div
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="w-full max-w-md"
+                transition={{ duration: 0.8, ease: [0.23, 1, 0.32, 1] }}
+                className="w-full max-w-md relative z-10"
             >
-                <div className="text-center mb-8">
+                <div className="text-center mb-10">
                     <motion.div
-                        whileHover={{ scale: 1.1, rotate: 5 }}
-                        className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white text-black mb-6 shadow-xl shadow-white/10"
+                        initial={{ scale: 0.8, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ delay: 0.2 }}
+                        className="relative inline-block mb-8"
                     >
-                        <Zap className="w-7 h-7 fill-current" />
+                        <div className="absolute inset-0 bg-blue-600 blur-2xl opacity-20 animate-pulse-slow" />
+                        <div className="relative w-16 h-16 bg-white rounded-[22px] flex items-center justify-center shadow-2xl shadow-blue-500/20 group cursor-default">
+                            <Zap className="w-8 h-8 text-black fill-current group-hover:scale-110 transition-transform duration-300" />
+                        </div>
                     </motion.div>
-                    <h1 className="text-4xl font-black tracking-tight brand-font mb-2">{isSignUp ? "Create Account" : "Welcome Back"}</h1>
-                    <p className="text-neutral-400 font-medium">
-                        {prompt ? "Sign in to start building your extension." : "Sign in to manage your extensions."}
+
+                    <h1 className="text-5xl font-black tracking-tighter text-white mb-3">
+                        {isSignUp ? "Create Account" : "Welcome Back"}
+                    </h1>
+                    <p className="text-neutral-500 font-medium text-lg px-8">
+                        {prompt ? "Sign in to start building your extension idea." : "The AI-native dashboard for next-gen extensions."}
                     </p>
 
                     {prompt && (
                         <motion.div
                             initial={{ opacity: 0, scale: 0.9 }}
                             animate={{ opacity: 1, scale: 1 }}
-                            className="mt-6 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-xs font-bold text-neutral-300 backdrop-blur-sm"
+                            className="mt-8 mx-auto inline-flex items-center gap-2.5 px-5 py-2.5 rounded-2xl bg-white/5 border border-white/10 text-xs font-bold text-neutral-300 backdrop-blur-md shadow-xl"
                         >
-                            <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
-                            Building: <span className="text-white italic">"{prompt.slice(0, 40)}{prompt.length > 40 ? '...' : ''}"</span>
+                            <div className="relative">
+                                <span className="absolute inset-0 rounded-full bg-blue-500 animate-ping opacity-75" />
+                                <span className="relative block w-2 h-2 rounded-full bg-blue-500" />
+                            </div>
+                            Building: <span className="text-white italic font-medium">"{prompt.slice(0, 32)}{prompt.length > 32 ? '...' : ''}"</span>
                         </motion.div>
                     )}
                 </div>
 
-                <div className="relative group">
-                    <div className="absolute -inset-1 bg-gradient-to-r from-blue-600/20 to-purple-600/20 blur-xl opacity-50 group-hover:opacity-100 transition-opacity duration-500 rounded-3xl" />
-                    <div className="relative glass-card p-8 md:p-10 rounded-3xl border border-white/10 shadow-2xl bg-black/40 backdrop-blur-3xl">
-                        <form onSubmit={handleAuth} className="space-y-4">
-                            <div className="space-y-2">
-                                <label className="text-xs font-bold uppercase tracking-wider text-neutral-400">Email</label>
-                                <div className="relative group">
-                                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500 group-focus-within:text-white transition-colors" />
+                <div className="relative">
+                    {/* Border Glow Effect */}
+                    <div className="absolute -inset-[1px] bg-gradient-to-b from-white/20 via-white/5 to-white/20 rounded-[32px] blur-sm opacity-50" />
+
+                    <div className="relative bg-[#0a0a0a]/90 backdrop-blur-3xl border border-white/10 p-8 md:p-10 rounded-[32px] shadow-3xl overflow-hidden">
+                        {/* Shimmer Effect */}
+                        <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.02] to-transparent pointer-events-none" />
+
+                        <form onSubmit={handleAuth} className="space-y-6 relative">
+                            <div className="space-y-2.5">
+                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-600 block px-1">Email Address</label>
+                                <div className="relative group/input">
+                                    <div className="absolute inset-x-0 bottom-0 h-[100%] bg-white/[0.02] rounded-2xl transition-all group-focus-within/input:bg-white/[0.05]" />
+                                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-neutral-600 transition-colors group-focus-within/input:text-white" />
                                     <input
                                         type="email"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
-                                        onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAuth(e))}
-                                        className="w-full bg-white/5 border border-white/5 focus:border-white/20 focus:bg-white/10 rounded-xl py-4 pl-10 pr-4 outline-none transition-all placeholder:text-neutral-600 text-white"
+                                        className="w-full bg-transparent border border-white/5 focus:border-white/20 rounded-2xl py-4.5 pl-12 pr-4 outline-none transition-all placeholder:text-neutral-700 text-white font-medium relative z-10"
                                         placeholder="you@example.com"
                                         required
                                     />
                                 </div>
                             </div>
-                            <div className="space-y-2">
-                                <label className="text-xs font-bold uppercase tracking-wider text-neutral-400">Password</label>
-                                <div className="relative group">
-                                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500 group-focus-within:text-white transition-colors" />
+
+                            <div className="space-y-2.5">
+                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-600 block px-1">Secret Key</label>
+                                <div className="relative group/input">
+                                    <div className="absolute inset-x-0 bottom-0 h-[100%] bg-white/[0.02] rounded-2xl transition-all group-focus-within/input:bg-white/[0.05]" />
+                                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-neutral-600 transition-colors group-focus-within/input:text-white" />
                                     <input
                                         type="password"
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
-                                        onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAuth(e))}
-                                        className="w-full bg-white/5 border border-white/5 focus:border-white/20 focus:bg-white/10 rounded-xl py-4 pl-10 pr-4 outline-none transition-all placeholder:text-neutral-600 text-white"
+                                        className="w-full bg-transparent border border-white/5 focus:border-white/20 rounded-2xl py-4.5 pl-12 pr-4 outline-none transition-all placeholder:text-neutral-700 text-white font-medium relative z-10"
                                         placeholder="••••••••"
                                         required
                                     />
                                 </div>
                             </div>
+
                             {error && (
                                 <motion.div
-                                    initial={{ opacity: 0, x: -10 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-500 text-sm font-bold flex items-center gap-2"
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: "auto" }}
+                                    className="p-4 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-500 text-xs font-bold leading-relaxed flex items-start gap-3"
                                 >
-                                    <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                                    <div className="w-1.5 h-1.5 rounded-full bg-red-500 mt-1 shrink-0" />
                                     {error}
                                 </motion.div>
                             )}
+
                             <button
                                 type="submit"
                                 disabled={isLoading}
                                 onMouseEnter={() => setIsHovering(true)}
                                 onMouseLeave={() => setIsHovering(false)}
-                                className="w-full py-4 bg-white text-black rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-neutral-100 transition-all disabled:opacity-50 mt-4 shadow-lg shadow-white/5"
+                                className="group/btn relative w-full py-5 bg-white text-black rounded-2xl font-black text-xs uppercase tracking-widest transition-all overflow-hidden active:scale-[0.98] disabled:opacity-50 mt-2"
                             >
-                                {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : (
-                                    <>
-                                        <span>{isSignUp ? "Create Account" : "Sign In"}</span>
-                                        <motion.div animate={{ x: isHovering ? 5 : 0 }}>
-                                            <ArrowRight className="w-5 h-5" />
-                                        </motion.div>
-                                    </>
-                                )}
+                                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 opacity-0 group-hover/btn:opacity-10 transition-opacity" />
+                                <div className="relative flex items-center justify-center gap-2.5">
+                                    {isLoading ? (
+                                        <Loader2 className="w-5 h-5 animate-spin" />
+                                    ) : (
+                                        <>
+                                            <span>{isSignUp ? "Create My Workspace" : "Access Workspace"}</span>
+                                            <motion.div animate={{ x: isHovering ? 5 : 0 }}>
+                                                <ArrowRight className="w-4.5 h-4.5" />
+                                            </motion.div>
+                                        </>
+                                    )}
+                                </div>
                             </button>
                         </form>
-                        <div className="mt-6 text-center text-sm">
-                            <span className="text-neutral-400">{isSignUp ? "Already have an account?" : "Don't have an account?"}</span>
+
+                        <div className="mt-8 text-center">
                             <button
                                 onClick={() => setIsSignUp(!isSignUp)}
-                                className="ml-2 font-bold text-white hover:underline"
+                                className="text-[11px] font-bold tracking-widest uppercase text-neutral-500 hover:text-white transition-colors flex items-center justify-center gap-2 mx-auto"
                             >
-                                {isSignUp ? "Sign In" : "Sign Up"}
+                                {isSignUp ? (
+                                    <>Already Registered? <span className="text-blue-500">Sign In</span></>
+                                ) : (
+                                    <>No account yet? <span className="text-blue-500">Initialize One</span></>
+                                )}
                             </button>
                         </div>
                     </div>
                 </div>
             </motion.div>
+
+            {/* Footer Subtle Stats or Branding */}
+            <div className="absolute bottom-8 text-[10px] font-bold uppercase tracking-[0.3em] text-neutral-800">
+                AI Extension Factory — Ver 2.0.4 — SECURED BY SUPABASE
+            </div>
         </div>
     );
 }

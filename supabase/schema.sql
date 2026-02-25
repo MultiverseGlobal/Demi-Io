@@ -48,7 +48,8 @@ CREATE TABLE projects (
     is_public BOOLEAN DEFAULT false,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
-    latest_code JSONB DEFAULT '{}'::jsonb
+    latest_code JSONB DEFAULT '{}'::jsonb,
+    metadata JSONB DEFAULT '{}'::jsonb
 );
 
 -- Messages Table (Chat history for the editor)

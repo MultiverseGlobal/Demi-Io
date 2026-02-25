@@ -15,7 +15,31 @@ serve(async (req) => {
     try {
         const { messages, model, projectId } = await req.json()
 
-        // 1. Get API Key from Environment
+        // 1. Setup Supabase Client
+        const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? ''
+        const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+        const supabase = createClient(supabaseUrl, supabaseKey)
+
+        // 2. Fetch Project Metadata for Context
+        let visualContext = ""
+        if (projectId) {
+            const { data: project } = await supabase
+                .from('projects')
+                .select('metadata')
+                .eq('id', projectId)
+                .single()
+
+            if (project?.metadata?.visual_selectors) {
+                visualContext = `
+### VISUAL SELECTOR CONTEXT (CRITICAL)
+The user has visually identified the following targets on the site ${project.metadata.target_url || 'unknown'}:
+${JSON.stringify(project.metadata.visual_selectors, null, 2)}
+You MUST use these exact selectors for any data extraction or DOM manipulation related to these elements.
+`;
+            }
+        }
+
+        // 3. Get API Key from Environment
         const apiKey = model.startsWith('claude')
             ? Deno.env.get('ANTHROPIC_API_KEY')
             : Deno.env.get('OPENAI_API_KEY')
@@ -24,11 +48,11 @@ serve(async (req) => {
             throw new Error(`API Key missing for model ${model}`)
         }
 
-        // 2. Setup System Prompt (Similar to our controller logic)
+        // 4. Setup System Prompt
         const SYSTEM_PROMPT = `
 You are Demi, an expert AI Chrome Extension Developer.
 Your goal is to build fully functional, manifest v3 compliant browser extensions.
-
+${visualContext}
 ### UNFAIR ADVANTAGE: THE INTENT GRAPH
 Before code, output <intent_graph> JSON.
 ### TRUST & QUALITY
@@ -39,7 +63,7 @@ Output <trust_report> JSON.
 3. Permission Minimiser: Minimal permissions only.
 `;
 
-        // 3. Dispatch to Provider
+        // 5. Dispatch to Provider
         if (model.startsWith('gpt')) {
             const res = await fetch('https://api.openai.com/v1/chat/completions', {
                 method: 'POST',

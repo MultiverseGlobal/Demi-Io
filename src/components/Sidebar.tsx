@@ -36,13 +36,13 @@ function SidebarItem({ icon, label, href, active, isCollapsed }: SidebarItemProp
                 className={cn(
                     "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors duration-200 group relative font-medium",
                     active
-                        ? "bg-secondary text-white"
-                        : "text-neutral-400 hover:text-white hover:bg-secondary/50"
+                        ? "bg-blue-50 text-blue-600"
+                        : "text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100"
                 )}
             >
                 <div className={cn(
                     "shrink-0 transition-colors duration-200",
-                    active ? "text-white" : "text-neutral-400 group-hover:text-white"
+                    active ? "text-blue-600" : "text-neutral-400 group-hover:text-neutral-900"
                 )}>
                     {icon}
                 </div>
@@ -71,6 +71,8 @@ export function Sidebar() {
         { icon: <LayoutDashboard className="w-4 h-4" />, label: "Dashboard", href: "/dashboard" },
         { icon: <Library className="w-4 h-4" />, label: "My Library", href: "/library" },
         { icon: <Compass className="w-4 h-4" />, label: "Discover", href: "/discover" },
+        { icon: <Sparkles className="w-4 h-4" />, label: "Templates", href: "/templates" },
+        { icon: <Search className="w-4 h-4" />, label: "Selector", href: "/selector" },
     ];
 
     const projectItems = [
@@ -89,7 +91,7 @@ export function Sidebar() {
             animate={{ width: isHovered ? 260 : 72 }}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
-            className="h-screen border-r border-white/5 bg-[#050505] flex flex-col z-50 overflow-hidden shadow-2xl transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)]"
+            className="h-screen border-r border-neutral-200 bg-white flex flex-col z-50 overflow-hidden shadow-[4px_0_24px_rgba(0,0,0,0.02)] transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)]"
         >
             <div className="p-4 mb-4">
                 <Link href="/" className="flex items-center gap-3 px-1.5 group overflow-hidden">
@@ -102,7 +104,7 @@ export function Sidebar() {
                                 initial={{ opacity: 0, x: -10 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 exit={{ opacity: 0, x: -10 }}
-                                className="font-black text-lg tracking-tighter text-white whitespace-nowrap"
+                                className="font-black text-lg tracking-tighter text-neutral-900 whitespace-nowrap"
                             >
                                 DEMI <span className="text-blue-500">IO</span>
                             </motion.span>
@@ -165,7 +167,7 @@ export function Sidebar() {
                                 Support
                             </motion.p>
                         ) : (
-                            <div className="h-px bg-white/5 mx-3" />
+                            <div className="h-px bg-neutral-100 mx-3" />
                         )}
                     </AnimatePresence>
                     <div className="space-y-1">
@@ -183,7 +185,7 @@ export function Sidebar() {
             </nav>
 
             {/* Bottom Section */}
-            <div className="p-4 border-t border-white/5 space-y-4 overflow-hidden">
+            <div className="p-4 border-t border-neutral-100 space-y-4 overflow-hidden">
                 <AnimatePresence>
                     {isHovered && (
                         <motion.div
@@ -192,9 +194,9 @@ export function Sidebar() {
                             exit={{ opacity: 0, y: 10 }}
                             className="space-y-2"
                         >
-                            <div className="p-3 bg-secondary/50 rounded-xl border border-border group hover:border-primary/20 transition-all cursor-pointer">
-                                <p className="text-xs font-bold mb-1 group-hover:text-primary transition-colors">Upgrade to Pro</p>
-                                <p className="text-[10px] text-muted-foreground">Unlock more benefits</p>
+                            <div className="p-3 bg-blue-50/50 rounded-xl border border-blue-100 group hover:border-blue-200 transition-all cursor-pointer">
+                                <p className="text-xs font-bold mb-1 group-hover:text-blue-600 transition-colors">Upgrade to Pro</p>
+                                <p className="text-[10px] text-neutral-500">Unlock more benefits</p>
                             </div>
                         </motion.div>
                     )}
@@ -202,7 +204,7 @@ export function Sidebar() {
 
                 <div className="flex items-center justify-between px-2">
                     <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-xs font-bold border border-white/5 overflow-hidden shrink-0">
+                        <div className="w-8 h-8 rounded-full bg-neutral-100 flex items-center justify-center text-xs font-bold border border-neutral-200 overflow-hidden shrink-0">
                             <UserCircle className="w-5 h-5 text-neutral-400" />
                         </div>
                         {isHovered && (
@@ -211,7 +213,7 @@ export function Sidebar() {
                                 animate={{ opacity: 1 }}
                                 className="flex flex-col"
                             >
-                                <span className="text-xs font-bold truncate max-w-[100px]">Ben Eboh</span>
+                                <span className="text-xs font-bold text-neutral-900 truncate max-w-[100px]">Ben Eboh</span>
                                 <span className="text-[9px] text-green-500 font-bold uppercase tracking-widest">Online</span>
                             </motion.div>
                         )}
@@ -220,10 +222,10 @@ export function Sidebar() {
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
-                            className="flex items-center gap-3 text-muted-foreground"
+                            className="flex items-center gap-3 text-neutral-400"
                         >
-                            <Link href="/learn" title="Learn & Tutorials" className="hover:text-primary transition-colors"><HelpCircle className="w-4 h-4" /></Link>
-                            <Link href="/settings" title="Quick Settings" className="hover:text-primary transition-colors"><Settings className="w-4 h-4" /></Link>
+                            <Link href="/learn" title="Learn & Tutorials" className="hover:text-blue-600 transition-colors"><HelpCircle className="w-4 h-4" /></Link>
+                            <Link href="/settings" title="Quick Settings" className="hover:text-blue-600 transition-colors"><Settings className="w-4 h-4" /></Link>
                         </motion.div>
                     )}
                 </div>

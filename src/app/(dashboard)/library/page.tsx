@@ -93,15 +93,15 @@ export default function LibraryPage() {
                         placeholder="Search your library..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full bg-[#151515] border border-white/5 rounded-2xl pl-12 pr-4 py-4 text-sm focus:border-blue-500/30 outline-none transition-all"
+                        className="w-full bg-white border border-neutral-200 rounded-2xl pl-12 pr-4 py-4 text-sm focus:border-blue-500/30 outline-none transition-all shadow-sm"
                     />
                 </div>
-                <div className="flex p-1 bg-[#151515] rounded-2xl border border-white/5 h-[54px] items-center">
+                <div className="flex p-1 bg-neutral-100 rounded-2xl border border-neutral-200 h-[54px] items-center">
                     <button
                         onClick={() => setViewMode('grid')}
                         className={cn(
                             "p-2.5 rounded-xl transition-all",
-                            viewMode === 'grid' ? "bg-white/10 text-white shadow-sm" : "text-neutral-500 hover:text-white"
+                            viewMode === 'grid' ? "bg-white text-neutral-900 shadow-sm" : "text-neutral-400 hover:text-neutral-900"
                         )}
                     >
                         <LayoutGrid className="w-5 h-5" />
@@ -110,7 +110,7 @@ export default function LibraryPage() {
                         onClick={() => setViewMode('list')}
                         className={cn(
                             "p-2.5 rounded-xl transition-all",
-                            viewMode === 'list' ? "bg-white/10 text-white shadow-sm" : "text-neutral-500 hover:text-white"
+                            viewMode === 'list' ? "bg-white text-neutral-900 shadow-sm" : "text-neutral-400 hover:text-neutral-900"
                         )}
                     >
                         <List className="w-5 h-5" />
@@ -120,9 +120,9 @@ export default function LibraryPage() {
 
             {/* Grid/List View */}
             {filteredProjects.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-20 bg-white/5 border border-dashed border-white/10 rounded-[40px] text-center space-y-4">
-                    <div className="p-4 bg-white/5 rounded-full">
-                        <Zap className="w-12 h-12 text-neutral-700" />
+                <div className="flex flex-col items-center justify-center py-20 bg-neutral-50/50 border border-dashed border-neutral-200 rounded-[40px] text-center space-y-4">
+                    <div className="p-4 bg-white rounded-full shadow-sm border border-neutral-100">
+                        <Zap className="w-12 h-12 text-blue-500 animate-pulse-slow" />
                     </div>
                     <div>
                         <h3 className="text-xl font-bold">No extensions yet</h3>
@@ -145,18 +145,18 @@ export default function LibraryPage() {
                         <div
                             key={project.id}
                             className={cn(
-                                "group bg-[#151515] border border-white/5 hover:border-blue-500/20 transition-all cursor-pointer",
+                                "group bg-white border border-neutral-100 hover:border-blue-500/20 transition-all cursor-pointer shadow-sm hover:shadow-xl hover:shadow-blue-500/5",
                                 viewMode === 'grid' ? "p-8 rounded-[32px] flex flex-col gap-6 h-full" : "p-4 rounded-2xl flex items-center justify-between"
                             )}
                             onClick={() => window.location.href = `/project/${project.id}`}
                         >
                             <div className={cn("flex gap-5", viewMode === 'list' && "items-center flex-1")}>
-                                <div className="p-4 bg-gradient-to-br from-blue-600/10 to-purple-600/10 rounded-2xl border border-white/5 text-blue-400 group-hover:scale-110 transition-transform flex-shrink-0">
-                                    <Zap className="w-6 h-6 fill-current" />
+                                <div className="p-4 bg-blue-50 rounded-2xl border border-blue-100 text-blue-600 group-hover:scale-110 transition-transform flex-shrink-0">
+                                    <Zap className="w-6 h-6 fill-blue-500/20" />
                                 </div>
                                 <div className="space-y-1 truncate pr-4">
-                                    <h3 className="text-lg font-bold group-hover:text-blue-400 transition-colors truncate">{project.name}</h3>
-                                    <p className="text-sm text-neutral-500 line-clamp-2">{project.description || "Experimental Chrome Extension"}</p>
+                                    <h3 className="text-lg font-black text-neutral-900 group-hover:text-blue-600 transition-colors truncate">{project.name}</h3>
+                                    <p className="text-sm text-neutral-500 font-medium line-clamp-2">{project.description || "Experimental Chrome Extension"}</p>
                                 </div>
                             </div>
 
@@ -164,8 +164,8 @@ export default function LibraryPage() {
                                 "flex items-center gap-4",
                                 viewMode === 'grid' ? "mt-auto pt-6 border-t border-white/5" : "flex-shrink-0"
                             )} onClick={e => e.stopPropagation()}>
-                                <div className="flex items-center gap-4 text-[10px] font-bold text-neutral-500 uppercase tracking-widest mr-auto">
-                                    <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/5 rounded-full">
+                                <div className="flex items-center gap-4 text-[10px] font-bold text-neutral-400 uppercase tracking-widest mr-auto">
+                                    <div className="flex items-center gap-1.5 px-2.5 py-1 bg-neutral-50 border border-neutral-100 rounded-full">
                                         <Shield className="w-3 h-3 text-green-500" />
                                         MV3
                                     </div>
