@@ -86,15 +86,15 @@ export function Sidebar() {
     return (
         <motion.aside
             initial={false}
-            animate={{ width: isHovered ? 256 : 80 }}
+            animate={{ width: isHovered ? 260 : 72 }}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
-            className="h-screen border-r border-white/5 bg-background flex flex-col z-50 overflow-hidden shadow-none transition-all duration-300"
+            className="h-screen border-r border-white/5 bg-[#050505] flex flex-col z-50 overflow-hidden shadow-2xl transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)]"
         >
             <div className="p-4 mb-4">
-                <Link href="/" className="flex items-center gap-2.5 px-2 group overflow-hidden">
-                    <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center text-black font-bold shrink-0">
-                        <Zap className="w-5 h-5 fill-current" />
+                <Link href="/" className="flex items-center gap-3 px-1.5 group overflow-hidden">
+                    <div className="w-9 h-9 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20 shrink-0 group-hover:scale-105 transition-transform">
+                        <Zap className="w-5 h-5 text-white fill-white/20" />
                     </div>
                     <AnimatePresence>
                         {isHovered && (
@@ -102,9 +102,9 @@ export function Sidebar() {
                                 initial={{ opacity: 0, x: -10 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 exit={{ opacity: 0, x: -10 }}
-                                className="font-black text-xl tracking-tighter brand-font whitespace-nowrap"
+                                className="font-black text-lg tracking-tighter text-white whitespace-nowrap"
                             >
-                                DEMI IO
+                                DEMI <span className="text-blue-500">IO</span>
                             </motion.span>
                         )}
                     </AnimatePresence>

@@ -128,7 +128,7 @@ export default function Home() {
 
               <motion.h1
                 style={{ opacity, scale }}
-                className="text-7xl md:text-[120px] font-black tracking-tighter leading-[0.85] text-white"
+                className="text-6xl md:text-7xl font-black tracking-tighter leading-tight text-white"
               >
                 Idea to extension <br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-500 to-blue-600 animate-gradient-x">in plain English.</span>
@@ -226,21 +226,59 @@ export default function Home() {
           </section>
 
           {/* Footer */}
-          <footer className="py-20 border-t border-white/5 bg-black/50 backdrop-blur-xl relative z-20">
-            <div className="max-w-7xl mx-auto px-12 flex flex-col md:flex-row justify-between items-center gap-12">
-              <div className="flex flex-col gap-4 items-center md:items-start">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-black">D</div>
-                  <span className="font-extrabold text-xl tracking-tighter uppercase">DEMI IO.</span>
+          <footer className="py-24 border-t border-white/5 bg-black relative z-20">
+            <div className="max-w-7xl mx-auto px-8 md:px-16">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-8 mb-16">
+                <div className="col-span-1 md:col-span-1 space-y-6 text-center md:text-left">
+                  <Link href="/" className="flex items-center justify-center md:justify-start gap-3">
+                    <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-black">D</div>
+                    <span className="font-extrabold text-xl tracking-tighter uppercase">DEMI IO.</span>
+                  </Link>
+                  <p className="text-neutral-500 text-sm leading-relaxed max-w-[240px] mx-auto md:mx-0">
+                    The world's first AI-native browser extension factory. Turn intent into production-ready tools instantly.
+                  </p>
                 </div>
-                <p className="text-neutral-600 text-sm font-bold">The AI Extension Factory of the Future.</p>
+
+                <div className="space-y-6 text-center md:text-left">
+                  <h4 className="text-xs font-black uppercase tracking-widest text-neutral-400">Platform</h4>
+                  <ul className="space-y-4 text-sm font-bold text-neutral-500">
+                    <li><a href="#" className="hover:text-white transition-colors">Showcase</a></li>
+                    <li><a href="#" className="hover:text-white transition-colors">Components</a></li>
+                    <li><a href="#" className="hover:text-white transition-colors">Templates</a></li>
+                    <li><a href="#" className="hover:text-white transition-colors">Pricing</a></li>
+                  </ul>
+                </div>
+
+                <div className="space-y-6 text-center md:text-left">
+                  <h4 className="text-xs font-black uppercase tracking-widest text-neutral-400">Resources</h4>
+                  <ul className="space-y-4 text-sm font-bold text-neutral-500">
+                    <li><a href="#" className="hover:text-white transition-colors">Documentation</a></li>
+                    <li><a href="#" className="hover:text-white transition-colors">API Reference</a></li>
+                    <li><a href="#" className="hover:text-white transition-colors">Blog</a></li>
+                    <li><a href="#" className="hover:text-white transition-colors">Help Center</a></li>
+                  </ul>
+                </div>
+
+                <div className="space-y-6 text-center md:text-left">
+                  <h4 className="text-xs font-black uppercase tracking-widest text-neutral-400">Company</h4>
+                  <ul className="space-y-4 text-sm font-bold text-neutral-500">
+                    <li><a href="#" className="hover:text-white transition-colors">About</a></li>
+                    <li><a href="#" className="hover:text-white transition-colors">Twitter</a></li>
+                    <li><a href="#" className="hover:text-white transition-colors">GitHub</a></li>
+                    <li><a href="#" className="hover:text-white transition-colors">Privacy</a></li>
+                  </ul>
+                </div>
               </div>
-              <div className="flex gap-10 text-neutral-500 font-black text-sm uppercase tracking-widest">
-                <a href="#" className="hover:text-white transition-colors">Twitter</a>
-                <a href="#" className="hover:text-white transition-colors">GitHub</a>
-                <a href="#" className="hover:text-white transition-colors">Terms</a>
+
+              <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
+                <p className="text-neutral-700 text-xs font-bold uppercase tracking-widest">© 2026 METAVERSE GLOBAL</p>
+                <div className="flex gap-8">
+                   <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                      <span className="text-[10px] font-black text-neutral-500 uppercase tracking-widest">All systems operational</span>
+                   </div>
+                </div>
               </div>
-              <p className="text-neutral-700 text-xs font-bold uppercase tracking-widest">© 2026 METAVERSE GLOBAL</p>
             </div>
           </footer>
         </motion.div>

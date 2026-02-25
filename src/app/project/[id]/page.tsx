@@ -10,7 +10,7 @@ import {
     Code2,
     Play,
     Share2,
-    Settings,
+    Settings as SettingsIcon,
     Loader2,
     Zap,
     Shield,
@@ -23,10 +23,11 @@ import {
     Save,
     History,
     RotateCcw,
-    Link,
+    Link as LinkIcon,
     Copy,
     Globe,
-    Lock
+    Lock,
+    Command
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
@@ -34,6 +35,8 @@ import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import JSZip from "jszip";
 import { validateIntent, sanitizeManifest, validateGuardrails, TrustReport } from "@/lib/intelligence";
+import { Sidebar } from "@/components/Sidebar";
+import Link from "next/link";
 
 function ProjectEditorContent({ params }: { params: { id: string } }) {
     const searchParams = useSearchParams();
@@ -265,32 +268,42 @@ function ProjectEditorContent({ params }: { params: { id: string } }) {
                 const chunk = decoder.decode(value, { stream: true });
                 aiContent += chunk;
 
-                // Real-time XML Parsing
-                const fileRegex = /<file name="(.*?)">([\s\S]*?)<\/file>/g;
-                let match;
-                while ((match = fileRegex.exec(aiContent)) !== null) {
-                    const [_, filename, content] = match;
-                    currentFiles[filename] = content.trim();
-                    if (!activeFile) setActiveFile(filename);
+                // Improved XML Parsing (Handles partial chunks better)
+                // 1. Files
+                const fileRegex = /<file name="(.*?)">([\s\S]*?)(?:<\/file>|$)/g;
+                let fileMatch;
+                while ((fileMatch = fileRegex.exec(aiContent)) !== null) {
+                    const [_, filename, content] = fileMatch;
+                    if (content.trim()) {
+                        currentFiles[filename] = content.trim();
+                        if (!activeFile) setActiveFile(filename);
+                    }
                 }
                 setFiles({ ...currentFiles });
 
-                const intentMatch = aiContent.match(/<intent_graph>([\s\S]*?)<\/intent_graph>/);
-                if (intentMatch) {
+                // 2. Intent Graph
+                const intentMatch = aiContent.match(/<intent_graph>([\s\S]*?)(?:<\/intent_graph>|$)/);
+                if (intentMatch && intentMatch[1]) {
                     try {
-                        const parsedIntent = JSON.parse(intentMatch[1]);
-                        setIntent(parsedIntent);
-                        const validation = validateIntent(parsedIntent);
-                        setIntelligenceStatus(prev => ({ ...prev, intentLocked: validation.valid }));
+                        const cleanJson = intentMatch[1].replace(/```json|```/g, "").trim();
+                        if (cleanJson.endsWith('}')) {
+                            const parsedIntent = JSON.parse(cleanJson);
+                            setIntent(parsedIntent);
+                            const validation = validateIntent(parsedIntent);
+                            setIntelligenceStatus(prev => ({ ...prev, intentLocked: validation.valid }));
+                        }
                     } catch (e) { }
                 }
 
-                // Real-time Trust Report Parsing
-                const trustMatch = aiContent.match(/<trust_report>([\s\S]*?)<\/trust_report>/);
-                if (trustMatch) {
+                // 3. Trust Report
+                const trustMatch = aiContent.match(/<trust_report>([\s\S]*?)(?:<\/trust_report>|$)/);
+                if (trustMatch && trustMatch[1]) {
                     try {
-                        const parsedTrust = JSON.parse(trustMatch[1]);
-                        setTrustReport(parsedTrust);
+                        const cleanJson = trustMatch[1].replace(/```json|```/g, "").trim();
+                        if (cleanJson.endsWith('}')) {
+                            const parsedTrust = JSON.parse(cleanJson);
+                            setTrustReport(parsedTrust);
+                        }
                     } catch (e) { }
                 }
 
@@ -348,11 +361,17 @@ function ProjectEditorContent({ params }: { params: { id: string } }) {
                 updated_at: new Date().toISOString()
             }).eq('id', params.id);
 
-        } catch (err) {
-            console.error(err);
+        } catch (err: any) {
+            console.error("ProjectEditor handleSendMessage failed:", err);
+
+            let errorMessage = "Sorry, I encountered an error connecting to the AI model.";
+            if (err.message.includes("401")) errorMessage = "Authentication error. Please check your Supabase session.";
+            if (err.message.includes("429")) errorMessage = "Rate limit exceeded. Please wait a moment before trying again.";
+            if (err.message.includes("500")) errorMessage = "The AI engine encountered an internal error. Please try again.";
+
             setMessages(prev => [...prev, {
                 role: 'assistant',
-                content: "Sorry, I encountered an error connecting to the AI model. Please check the API Keys.",
+                content: errorMessage,
                 isError: true
             }]);
         } finally {
@@ -361,268 +380,274 @@ function ProjectEditorContent({ params }: { params: { id: string } }) {
     };
 
     return (
-        <div className="flex h-screen w-full bg-[#0a0a0a] text-white overflow-hidden font-sans">
-            {/* LEFT PANEL: Workbench / Chat */}
-            <div className="w-[400px] flex-shrink-0 flex flex-col border-r border-white/10 bg-[#0a0a0a]">
-                {/* Header */}
-                <header className="h-14 border-b border-white/10 flex items-center justify-between px-4">
-                    <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                            <Bot className="w-5 h-5 text-white" />
-                        </div>
-                        <span className="font-bold text-sm tracking-tight">{project?.name || "Loading..."}</span>
-                    </div>
-                    <button className="text-neutral-400 hover:text-white transition-colors">
-                        <Settings className="w-4 h-4" />
-                    </button>
-                </header>
+        <div className="flex h-screen w-full bg-[#050505] text-white overflow-hidden font-sans">
+            <Sidebar />
 
-                {/* Chat History */}
-                <div className="flex-1 overflow-y-auto p-4 space-y-6">
-                    {messages.map((msg, i) => (
-                        <div key={i} className={cn("flex gap-3", msg.role === 'assistant' ? "" : "flex-row-reverse")}>
-                            <div className={cn(
-                                "w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0",
-                                msg.role === 'assistant' ? "bg-blue-600/20 text-blue-400" : "bg-neutral-800 text-neutral-400"
-                            )}>
-                                {msg.role === 'assistant' ? <Bot className="w-4 h-4" /> : <User className="w-4 h-4" />}
+            <div className="flex-1 flex overflow-hidden relative">
+                {/* LEFT PANEL: Workbench / Chat */}
+                <div className="w-[380px] flex-shrink-0 flex flex-col border-r border-white/5 bg-[#0a0a0a]/50 backdrop-blur-xl">
+                    {/* Header */}
+                    <header className="h-14 border-b border-white/5 flex items-center justify-between px-5 bg-black/20">
+                        <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 bg-blue-600/10 rounded-lg flex items-center justify-center border border-blue-500/20">
+                                <Command className="w-4 h-4 text-blue-500" />
                             </div>
-                            <div className={cn(
-                                "max-w-[85%] p-3 rounded-2xl text-sm leading-relaxed",
-                                msg.role === 'assistant'
-                                    ? "bg-transparent text-neutral-300"
-                                    : "bg-neutral-800 text-white"
-                            )}>
-                                <div className="whitespace-pre-wrap">{msg.content.replace(/<file[\s\S]*?<\/file>/g, '')}</div> {/* Hide raw XML tags in chat */}
-                                {msg.model && (
-                                    <div className="mt-2 text-[10px] uppercase tracking-wider font-bold text-blue-500/50 flex items-center gap-1">
-                                        <Sparkles className="w-3 h-3" />
-                                        {msg.model}
+                            <span className="font-black text-xs uppercase tracking-widest text-neutral-400">Builder Node</span>
+                        </div>
+                        <button className="text-neutral-500 hover:text-white transition-colors">
+                            <SettingsIcon className="w-4 h-4" />
+                        </button>
+                    </header>
+
+                    {/* Chat History */}
+                    <div className="flex-1 overflow-y-auto p-4 space-y-6">
+                        {messages.map((msg, i) => (
+                            <div key={i} className={cn("flex gap-3", msg.role === 'assistant' ? "" : "flex-row-reverse")}>
+                                <div className={cn(
+                                    "w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0",
+                                    msg.role === 'assistant' ? "bg-blue-600/20 text-blue-400" : "bg-neutral-800 text-neutral-400"
+                                )}>
+                                    {msg.role === 'assistant' ? <Bot className="w-4 h-4" /> : <User className="w-4 h-4" />}
+                                </div>
+                                <div className={cn(
+                                    "max-w-[85%] p-3 rounded-2xl text-sm leading-relaxed",
+                                    msg.role === 'assistant'
+                                        ? "bg-transparent text-neutral-300"
+                                        : "bg-neutral-800 text-white"
+                                )}>
+                                    <div className="whitespace-pre-wrap">{msg.content.replace(/<file[\s\S]*?<\/file>/g, '')}</div> {/* Hide raw XML tags in chat */}
+                                    {msg.model && (
+                                        <div className="mt-2 text-[10px] uppercase tracking-wider font-bold text-blue-500/50 flex items-center gap-1">
+                                            <Sparkles className="w-3 h-3" />
+                                            {msg.model}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                        {isGenerating && (
+                            <div className="flex gap-3">
+                                <div className="w-8 h-8 rounded-full bg-blue-600/20 text-blue-400 flex items-center justify-center flex-shrink-0">
+                                    <Bot className="w-4 h-4" />
+                                </div>
+                                <div className="flex items-center gap-2 text-neutral-500 text-sm">
+                                    <Loader2 className="w-3 h-3 animate-spin" />
+                                    Thinking...
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Input Area */}
+                    <div className="p-4 border-t border-white/10 bg-[#0a0a0a]">
+                        <div className="relative group bg-[#151515] border border-white/10 focus-within:border-blue-500/50 rounded-xl transition-all duration-200 shadow-lg shadow-black/50">
+                            <textarea
+                                value={input}
+                                onChange={(e) => setInput(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), handleSendMessage())}
+                                placeholder="Request changes or add new features..."
+                                className="w-full bg-transparent border-none focus:ring-0 text-white placeholder:text-neutral-700 text-sm resize-none min-h-[80px] p-4 focus:outline-none font-medium leading-relaxed"
+                            />
+
+                            {/* Intelligence Status Bar */}
+                            <div className="flex items-center gap-4 px-4 py-2 border-t border-white/5 bg-black/10">
+                                <div className={cn(
+                                    "flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-wider transition-colors",
+                                    intelligenceStatus.intentLocked ? "text-purple-400" : "text-neutral-600"
+                                )}>
+                                    <Sparkles className="w-3 h-3" />
+                                    Intent Locked
+                                </div>
+                                <div className="w-1 h-1 rounded-full bg-neutral-800" />
+                                <div className={cn(
+                                    "flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-wider transition-colors",
+                                    intelligenceStatus.permissionsPruned ? "text-green-400" : "text-neutral-600"
+                                )}>
+                                    <Zap className="w-3 h-3" />
+                                    Permissions Pruned
+                                </div>
+                                <div className="w-1 h-1 rounded-full bg-neutral-800" />
+                                <div className={cn(
+                                    "flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-wider transition-colors",
+                                    intelligenceStatus.guardrailsPassed ? "text-blue-400" : "text-red-400"
+                                )}>
+                                    <Shield className="w-3 h-3" />
+                                    {intelligenceStatus.guardrailsPassed ? "Guardrails Passed" : "Security Flagged"}
+                                </div>
+                            </div>
+
+                            {/* Toolbar */}
+                            <div className="px-3 pb-3 flex items-center justify-between">
+                                {/* Model Selector */}
+                                <div className="relative">
+                                    <select
+                                        value={selectedModel}
+                                        onChange={(e) => setSelectedModel(e.target.value)}
+                                        className="appearance-none bg-[#202020] hover:bg-[#252525] text-[11px] font-medium text-neutral-400 px-2 py-1.5 rounded-lg border border-white/5 cursor-pointer outline-none focus:border-blue-500/30 transition-colors pr-8"
+                                    >
+                                        <option value="claude-3-5-sonnet">Claude 3.5 Sonnet</option>
+                                        <option value="gpt-4o">GPT-4o (OpenAI)</option>
+                                        <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+                                    </select>
+                                    <ChevronDown className="w-3 h-3 text-neutral-500 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                                </div>
+
+                                <button
+                                    onClick={() => handleSendMessage()}
+                                    disabled={!input.trim()}
+                                    className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 disabled:opacity-50 disabled:hover:bg-blue-600 transition-colors"
+                                >
+                                    <Send className="w-3.5 h-3.5" />
+                                </button>
+                            </div>
+                        </div>
+                        <div className="text-center mt-3">
+                            <span className="text-[10px] text-neutral-600 font-medium">
+                                <span className="text-blue-500">Pro Plan</span> · 4,200 credits remaining
+                            </span>
+                        </div>
+
+                        {/* Trust Report Preview Snippet */}
+                        <AnimatePresence>
+                            {trustReport && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: 10 }}
+                                    className="mt-3 flex items-center justify-between px-4 py-2 bg-blue-500/5 border border-blue-500/10 rounded-lg group cursor-pointer hover:bg-blue-500/10 transition-all"
+                                    onClick={() => setShowTrustReport(true)}
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <div className="flex flex-col">
+                                            <span className="text-[10px] font-bold text-blue-400 uppercase tracking-widest">AI Confidence</span>
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-24 h-1 bg-white/5 rounded-full overflow-hidden">
+                                                    <motion.div
+                                                        initial={{ width: 0 }}
+                                                        animate={{ width: `${trustReport.confidence_score}%` }}
+                                                        className={cn(
+                                                            "h-full transition-all duration-1000",
+                                                            trustReport.confidence_score > 80 ? "bg-green-500" : trustReport.confidence_score > 60 ? "bg-yellow-500" : "bg-red-500"
+                                                        )}
+                                                    />
+                                                </div>
+                                                <span className="text-xs font-mono text-white/70">{trustReport.confidence_score}%</span>
+                                            </div>
+                                        </div>
                                     </div>
-                                )}
-                            </div>
-                        </div>
-                    ))}
-                    {isGenerating && (
-                        <div className="flex gap-3">
-                            <div className="w-8 h-8 rounded-full bg-blue-600/20 text-blue-400 flex items-center justify-center flex-shrink-0">
-                                <Bot className="w-4 h-4" />
-                            </div>
-                            <div className="flex items-center gap-2 text-neutral-500 text-sm">
-                                <Loader2 className="w-3 h-3 animate-spin" />
-                                Thinking...
-                            </div>
-                        </div>
-                    )}
+                                    <button className="text-[10px] font-bold text-neutral-400 group-hover:text-white transition-colors flex items-center gap-1 uppercase tracking-wider">
+                                        View Report
+                                        <ArrowRight className="w-3 h-3" />
+                                    </button>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
                 </div>
 
-                {/* Input Area */}
-                <div className="p-4 border-t border-white/10 bg-[#0a0a0a]">
-                    <div className="relative group bg-[#151515] border border-white/10 focus-within:border-blue-500/50 rounded-xl transition-all duration-200 shadow-lg shadow-black/50">
-                        <textarea
-                            value={input}
-                            onChange={(e) => setInput(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), handleSendMessage())}
-                            placeholder="Describe changes or features..."
-                        />
+                <div className="flex-1 flex flex-col bg-[#050505]">
+                    <div className="h-14 border-b border-white/5 flex items-center justify-between px-6 bg-black/40 backdrop-blur-md">
+                        <div className="flex items-center gap-6">
+                            <div className="flex bg-neutral-900 p-1 rounded-lg border border-white/5">
+                                <button
+                                    onClick={() => setActiveTab('preview')}
+                                    className={cn(
+                                        "px-4 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-md transition-all",
+                                        activeTab === 'preview' ? "bg-white text-black shadow-lg" : "text-neutral-500 hover:text-neutral-300"
+                                    )}
+                                >
+                                    Preview
+                                </button>
+                                <button
+                                    onClick={() => setActiveTab('code')}
+                                    className={cn(
+                                        "px-4 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-md transition-all",
+                                        activeTab === 'code' ? "bg-white text-black shadow-lg" : "text-neutral-500 hover:text-neutral-300"
+                                    )}
+                                >
+                                    Code
+                                </button>
+                            </div>
 
-                        {/* Intelligence Status Bar */}
-                        <div className="flex items-center gap-4 px-4 py-2 border-t border-white/5 bg-black/10">
-                            <div className={cn(
-                                "flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-wider transition-colors",
-                                intelligenceStatus.intentLocked ? "text-purple-400" : "text-neutral-600"
-                            )}>
-                                <Sparkles className="w-3 h-3" />
-                                Intent Locked
-                            </div>
-                            <div className="w-1 h-1 rounded-full bg-neutral-800" />
-                            <div className={cn(
-                                "flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-wider transition-colors",
-                                intelligenceStatus.permissionsPruned ? "text-green-400" : "text-neutral-600"
-                            )}>
-                                <Zap className="w-3 h-3" />
-                                Permissions Pruned
-                            </div>
-                            <div className="w-1 h-1 rounded-full bg-neutral-800" />
-                            <div className={cn(
-                                "flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-wider transition-colors",
-                                intelligenceStatus.guardrailsPassed ? "text-blue-400" : "text-red-400"
-                            )}>
-                                <Shield className="w-3 h-3" />
-                                {intelligenceStatus.guardrailsPassed ? "Guardrails Passed" : "Security Flagged"}
+                            <div className="flex items-center gap-2 px-3 py-1 bg-blue-500/10 border border-blue-500/20 rounded-full">
+                                <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse" />
+                                <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest">{project?.name || "Initializing..."}</span>
                             </div>
                         </div>
 
-                        {/* Toolbar */}
-                        <div className="px-3 pb-3 flex items-center justify-between">
-                            {/* Model Selector */}
-                            <div className="relative">
-                                <select
-                                    value={selectedModel}
-                                    onChange={(e) => setSelectedModel(e.target.value)}
-                                    className="appearance-none bg-[#202020] hover:bg-[#252525] text-[11px] font-medium text-neutral-400 px-2 py-1.5 rounded-lg border border-white/5 cursor-pointer outline-none focus:border-blue-500/30 transition-colors pr-8"
+                        <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-1.5">
+                                <button
+                                    onClick={handleShare}
+                                    disabled={isSharing}
+                                    className="flex items-center gap-2 px-4 py-2 text-[10px] font-black text-neutral-400 hover:text-white transition-all bg-white/5 hover:bg-white/10 rounded-xl border border-white/5 uppercase tracking-widest disabled:opacity-50"
                                 >
-                                    <option value="claude-3-5-sonnet">Claude 3.5 Sonnet</option>
-                                    <option value="gpt-4o">GPT-4o (OpenAI)</option>
-                                    <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
-                                </select>
-                                <ChevronDown className="w-3 h-3 text-neutral-500 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                                    <Share2 className="w-3.5 h-3.5" />
+                                    Share
+                                </button>
+                                <button
+                                    onClick={handleSaveCheckpoint}
+                                    className="flex items-center gap-2 px-4 py-2 text-[10px] font-black text-neutral-400 hover:text-white transition-all bg-white/5 hover:bg-white/10 rounded-xl border border-white/5 uppercase tracking-widest"
+                                >
+                                    <Save className="w-3.5 h-3.5" />
+                                    Save
+                                </button>
                             </div>
-
+                            <div className="w-px h-6 bg-white/10 mx-1" />
                             <button
-                                onClick={() => handleSendMessage()}
-                                disabled={!input.trim()}
-                                className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 disabled:opacity-50 disabled:hover:bg-blue-600 transition-colors"
+                                onClick={handleDownloadZip}
+                                disabled={Object.keys(files).length === 0}
+                                className="px-6 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-500 transition-all flex items-center gap-2 shadow-lg shadow-blue-500/20 active:scale-95 disabled:opacity-30"
                             >
-                                <Send className="w-3.5 h-3.5" />
+                                <Play className="w-3.5 h-3.5 fill-current" />
+                                <span className="text-[10px] font-black uppercase tracking-widest whitespace-nowrap">Deploy Zip</span>
                             </button>
                         </div>
                     </div>
-                    <div className="text-center mt-3">
-                        <span className="text-[10px] text-neutral-600 font-medium">
-                            <span className="text-blue-500">Pro Plan</span> · 4,200 credits remaining
-                        </span>
-                    </div>
 
-                    {/* Trust Report Preview Snippet */}
-                    <AnimatePresence>
-                        {trustReport && (
-                            <motion.div
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: 10 }}
-                                className="mt-3 flex items-center justify-between px-4 py-2 bg-blue-500/5 border border-blue-500/10 rounded-lg group cursor-pointer hover:bg-blue-500/10 transition-all"
-                                onClick={() => setShowTrustReport(true)}
-                            >
-                                <div className="flex items-center gap-3">
-                                    <div className="flex flex-col">
-                                        <span className="text-[10px] font-bold text-blue-400 uppercase tracking-widest">AI Confidence</span>
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-24 h-1 bg-white/5 rounded-full overflow-hidden">
-                                                <motion.div
-                                                    initial={{ width: 0 }}
-                                                    animate={{ width: `${trustReport.confidence_score}%` }}
-                                                    className={cn(
-                                                        "h-full transition-all duration-1000",
-                                                        trustReport.confidence_score > 80 ? "bg-green-500" : trustReport.confidence_score > 60 ? "bg-yellow-500" : "bg-red-500"
-                                                    )}
-                                                />
-                                            </div>
-                                            <span className="text-xs font-mono text-white/70">{trustReport.confidence_score}%</span>
-                                        </div>
+                    <div className="flex-1 relative overflow-hidden">
+                        {activeTab === 'preview' ? (
+                            <iframe
+                                srcDoc={
+                                    files['popup.html']
+                                        ? files['popup.html'].replace('</body>', `<style>${files['popup.css'] || ''}</style><script>${files['popup.js'] || ''}</script></body>`)
+                                        : Object.keys(files).length > 0
+                                            ? `<div style='background: #050505; color: #444; height: 100vh; display: flex; align-items: center; justify-content: center; font-family: sans-serif; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em;'>No popup.html available</div>`
+                                            : "<div style='background: #050505; color: #444; height: 100vh; display: flex; align-items: center; justify-content: center; font-family: sans-serif; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em;'>Initializing Preview...</div>"
+                                }
+                                className="w-full h-full border-none bg-white"
+                            />
+                        ) : (
+                            <div className="flex h-full">
+                                {/* File Tree */}
+                                <div className="w-56 border-r border-white/5 bg-black/20 p-4 overflow-y-auto">
+                                    <h3 className="text-[10px] font-black text-neutral-600 uppercase tracking-widest mb-4">Filesystem</h3>
+                                    <div className="space-y-1">
+                                        {Object.keys(files).map(file => (
+                                            <button
+                                                key={file}
+                                                onClick={() => setActiveFile(file)}
+                                                className={cn(
+                                                    "w-full text-left text-xs px-3 py-2.5 rounded-xl transition-all truncate flex items-center gap-3 border border-transparent",
+                                                    activeFile === file ? "text-blue-400 bg-blue-500/10 border-blue-500/20 font-bold" : "text-neutral-500 hover:text-neutral-300 hover:bg-white/5"
+                                                )}
+                                            >
+                                                <div className={cn("w-1.5 h-1.5 rounded-full", activeFile === file ? "bg-blue-500" : "bg-neutral-800")} />
+                                                {file}
+                                            </button>
+                                        ))}
+                                    </div>
+                                    {Object.keys(files).length === 0 && <span className="text-neutral-700 text-[10px] font-black uppercase tracking-widest">No files generated</span>}
+                                </div>
+                                {/* Code Editor View */}
+                                <div className="flex-1 p-8 overflow-auto font-mono text-sm text-neutral-400 bg-black/10">
+                                    <div className="max-w-4xl">
+                                        <pre className="leading-relaxed">{activeFile ? files[activeFile] : "// Select a file to view source"}</pre>
                                     </div>
                                 </div>
-                                <button className="text-[10px] font-bold text-neutral-400 group-hover:text-white transition-colors flex items-center gap-1 uppercase tracking-wider">
-                                    View Report
-                                    <ArrowRight className="w-3 h-3" />
-                                </button>
-                            </motion.div>
+                            </div>
                         )}
-                    </AnimatePresence>
-                </div>
-            </div>
-
-            {/* RIGHT PANEL: Preview / Code */}
-            <div className="flex-1 flex flex-col bg-[#0f0f0f]">
-                <div className="h-14 border-b border-white/10 flex items-center justify-between px-6 bg-[#0a0a0a]">
-                    <div className="flex bg-[#151515] p-1 rounded-lg border border-white/5">
-                        <button
-                            onClick={() => setActiveTab('preview')}
-                            className={cn(
-                                "px-3 py-1.5 text-xs font-medium rounded-md transition-all",
-                                activeTab === 'preview' ? "bg-[#252525] text-white shadow-sm" : "text-neutral-500 hover:text-neutral-300"
-                            )}
-                        >
-                            Preview
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('code')}
-                            className={cn(
-                                "px-3 py-1.5 text-xs font-medium rounded-md transition-all",
-                                activeTab === 'code' ? "bg-[#252525] text-white shadow-sm" : "text-neutral-500 hover:text-neutral-300"
-                            )}
-                        >
-                            Code
-                        </button>
                     </div>
-
-                    <div className="flex items-center gap-2">
-                        <button
-                            onClick={handleShare}
-                            disabled={isSharing}
-                            className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold text-neutral-400 hover:text-white transition-colors bg-[#151515] hover:bg-[#1a1a1a] rounded-lg border border-white/5 uppercase tracking-wider disabled:opacity-50"
-                        >
-                            <Share2 className="w-3.5 h-3.5" />
-                            {isSharing ? "Sharing..." : "Share"}
-                        </button>
-                        <button
-                            onClick={handleSaveCheckpoint}
-                            className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold text-neutral-400 hover:text-white transition-colors bg-[#151515] hover:bg-[#1a1a1a] rounded-lg border border-white/5 uppercase tracking-wider"
-                        >
-                            <Save className="w-3.5 h-3.5" />
-                            Checkpoint
-                        </button>
-                        <button
-                            onClick={handleFork}
-                            className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold text-neutral-400 hover:text-white transition-colors bg-[#151515] hover:bg-[#1a1a1a] rounded-lg border border-white/5 uppercase tracking-wider"
-                        >
-                            <GitFork className="w-3.5 h-3.5" />
-                            Fork
-                        </button>
-                        <button
-                            onClick={() => setShowVersionBrowser(true)}
-                            className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold text-neutral-400 hover:text-white transition-colors bg-[#151515] hover:bg-[#1a1a1a] rounded-lg border border-white/5 uppercase tracking-wider"
-                        >
-                            <History className="w-3.5 h-3.5" />
-                            History
-                        </button>
-                        <div className="w-px h-6 bg-white/5 mx-1" />
-                        <button
-                            onClick={handleDownloadZip}
-                            disabled={Object.keys(files).length === 0}
-                            className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-all flex items-center gap-2 px-4 shadow-lg shadow-blue-500/20 active:scale-95 disabled:opacity-50"
-                        >
-                            <Play className="w-3.5 h-3.5 fill-current" />
-                            <span className="text-[11px] font-bold uppercase tracking-wider whitespace-nowrap">Deploy</span>
-                        </button>
-                    </div>
-                </div>
-
-                <div className="flex-1 relative overflow-hidden">
-                    {activeTab === 'preview' ? (
-                        <iframe
-                            srcDoc={
-                                // Simple In-Memory Preview: Inject CSS/JS into the HTML file found
-                                files['popup.html']
-                                    ? files['popup.html'].replace('</body>', `<style>${files['popup.css'] || ''}</style><script>${files['popup.js'] || ''}</script></body>`)
-                                    : Object.keys(files).length > 0
-                                        ? `<h1 style='color: white; text-align: center; margin-top: 20%; font-family: sans-serif'>No popup.html found. Displaying first file content: <pre>${Object.values(files)[0]}</pre></h1>`
-                                        : "<h1 style='color: white; text-align: center; margin-top: 20%; font-family: sans-serif'>Generating...</h1>"
-                            }
-                            className="w-full h-full border-none bg-white"
-                        />
-                    ) : (
-                        <div className="flex h-full">
-                            {/* File Tree */}
-                            <div className="w-48 border-r border-white/10 bg-[#151515] p-2 overflow-y-auto">
-                                <h3 className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2 px-2">Files</h3>
-                                {Object.keys(files).map(file => (
-                                    <button
-                                        key={file}
-                                        onClick={() => setActiveFile(file)}
-                                        className={cn("w-full text-left text-sm px-2 py-1.5 rounded hover:bg-white/5 truncate flex items-center gap-2", activeFile === file ? "text-blue-400 bg-blue-500/10" : "text-neutral-400")}
-                                    >
-                                        <Code2 className="w-3 h-3" /> {file}
-                                    </button>
-                                ))}
-                                {Object.keys(files).length === 0 && <span className="text-neutral-600 text-xs px-2">No files yet</span>}
-                            </div>
-                            {/* Code Editor View */}
-                            <div className="flex-1 p-4 overflow-auto font-mono text-sm text-neutral-300">
-                                <pre>{activeFile ? files[activeFile] : "// Select a file to view content"}</pre>
-                            </div>
-                        </div>
-                    )}
                 </div>
             </div>
             <InstallationGuide

@@ -36,21 +36,56 @@ export default function DashboardPage() {
     const router = useRouter();
     const [prompt, setPrompt] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+    const [liveStats, setLiveStats] = useState(stats);
+    const [history, setHistory] = useState<any[]>([]);
+
+    useEffect(() => {
+        const fetchDashboardData = async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) return;
+
+            // Fetch Project Count
+            const { count: projectCount } = await supabase
+                .from('projects')
+                .select('*', { count: 'exact', head: true })
+                .eq('user_id', session.user.id);
+
+            // Fetch Total Installs (Mock logic for now, or fetch from extensions table if count is tracked)
+            const { count: installCount } = await supabase
+                .from('extensions')
+                .select('*', { count: 'exact', head: true });
+
+            setLiveStats([
+                { label: "Active Extensions", value: (projectCount || 0).toString(), change: "Live", icon: <Zap className="w-4 h-4" /> },
+                { label: "Total Installs", value: (installCount || 0).toString(), change: "Community", icon: <Download className="w-4 h-4" /> },
+                { label: "Runtime Views", value: "45.8k", change: "+24%", icon: <Eye className="w-4 h-4" /> },
+            ]);
+
+            // Fetch Recent Generations
+            const { data: recent } = await supabase
+                .from('projects')
+                .select('*')
+                .eq('user_id', session.user.id)
+                .order('updated_at', { ascending: false })
+                .limit(3);
+
+            if (recent) setHistory(recent);
+        };
+
+        fetchDashboardData();
+    }, []);
 
     const handleGenerate = async () => {
         if (!prompt.trim()) return;
         setIsLoading(true);
 
         try {
-            console.log("Generating project for prompt:", prompt);
             const { data: { session } } = await supabase.auth.getSession();
             if (!session) {
-                console.warn("No active session found in Dashboard");
                 alert("Please sign in to continue.");
                 return;
             }
 
-            console.log("Creating project in Supabase...");
             const { data: project, error: projError } = await supabase
                 .from('projects')
                 .insert({
@@ -61,15 +96,9 @@ export default function DashboardPage() {
                 .select()
                 .single();
 
-            if (projError) {
-                console.error("Project creation error:", projError);
-                throw projError;
-            }
-
-            console.log("Project created, redirecting to:", project.id);
+            if (projError) throw projError;
             router.push(`/project/${project.id}?prompt=${encodeURIComponent(prompt)}`);
         } catch (err: any) {
-            console.error("Dashboard handleGenerate failed:", err);
             alert("Error creating project: " + err.message);
         } finally {
             setIsLoading(false);
@@ -81,66 +110,62 @@ export default function DashboardPage() {
 
             <div className="space-y-12 h-full flex flex-col justify-center max-w-4xl mx-auto px-6 py-12 relative z-10">
                 {/* Centered Prompt Vibe (Suno Style) */}
-                <section className="text-center space-y-8 py-12 relative">
-                    {/* Subtle Center Highlight - Reduced blur and opacity */}
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-white/5 blur-[100px] -z-10 pointer-events-none rounded-full opacity-20" />
+                <section className="text-center space-y-10 py-12 relative">
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-blue-500/5 blur-[120px] -z-10 pointer-events-none rounded-full opacity-30" />
 
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.98 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 0.5 }}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
                         className="space-y-4"
                     >
-                        <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-neutral-800/50 text-[10px] font-black uppercase tracking-widest text-neutral-400 border border-neutral-700/50">
-                            <Sparkles className="w-3 h-3 text-purple-400" />
-                            Your 2026 Lovable Vibes are here →
+                        <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 text-[10px] font-black uppercase tracking-widest text-blue-400 border border-white/5">
+                            <Sparkles className="w-3.5 h-3.5" />
+                            AI Extension Factory v2.0
                         </span>
-                        <h1 className="text-5xl md:text-6xl font-black tracking-tight text-white leading-[1.1] brand-font">
-                            Ready to build, Ben?
+                        <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-white leading-tight">
+                            Build your next <br />
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500 italic">extension idea.</span>
                         </h1>
                     </motion.div>
 
                     {/* Main Action Bar - Suno Style */}
-                    <div className="max-w-2xl mx-auto w-full relative group">
-                        <div className="relative glass-card bg-black/40 backdrop-blur-3xl border border-white/5 focus-within:border-white/20 rounded-[32px] p-5 flex flex-col gap-4 transition-all duration-300">
+                    <div className="max-w-2xl mx-auto w-full relative group px-4 md:px-0">
+                        <div className="relative glass-card bg-[#0a0a0a]/80 backdrop-blur-3xl border border-white/10 focus-within:border-blue-500/40 rounded-[28px] p-4 flex flex-col gap-4 shadow-2xl transition-all duration-300">
                             <textarea
                                 value={prompt}
                                 onChange={(e) => setPrompt(e.target.value)}
                                 onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), handleGenerate())}
-                                placeholder="What extension can I build for you today?"
-                                className="w-full bg-transparent border-none focus:ring-0 text-white placeholder:text-neutral-400 text-base resize-none min-h-[60px] focus:outline-none"
+                                placeholder="Describe your extension idea in detail..."
+                                className="w-full bg-transparent border-none focus:ring-0 text-white placeholder:text-neutral-600 text-lg resize-none min-h-[80px] p-2 focus:outline-none font-medium leading-relaxed"
                             />
-                            <div className="flex items-center justify-between">
-                                <div className="flex gap-2">
-                                    <button className="p-2.5 rounded-xl hover:bg-neutral-800/80 text-neutral-400 hover:text-white transition-all" title="Attach">
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-                                        </svg>
-                                    </button>
+                            <div className="flex items-center justify-between px-2 pb-1">
+                                <div className="flex gap-4 items-center">
+                                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-neutral-600">
+                                        <Code2 className="w-3.5 h-3.5" />
+                                        Manifest v3
+                                    </div>
                                 </div>
-                                <div className="flex gap-2">
-                                    <button
-                                        onClick={handleGenerate}
-                                        disabled={!prompt.trim() || isLoading}
-                                        className="group/btn relative inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white hover:bg-neutral-100 text-black rounded-2xl font-bold text-sm transition-all disabled:opacity-50"
-                                    >
-                                        {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowUpRight className="w-4 h-4" />}
-                                    </button>
-                                </div>
+                                <button
+                                    onClick={handleGenerate}
+                                    disabled={!prompt.trim() || isLoading}
+                                    className="group/btn relative inline-flex items-center justify-center gap-2 px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-blue-500/20 active:scale-95 disabled:opacity-30"
+                                >
+                                    {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <span>Start Building</span>}
+                                </button>
                             </div>
                         </div>
                     </div>
 
                     {/* Sub-actions */}
                     <div className="flex items-center justify-center gap-12 text-[11px] font-bold text-neutral-500 uppercase tracking-[0.2em]">
-                        <button className="hover:text-white transition-colors">Recently viewed</button>
-                        <button className="hover:text-white transition-colors">My projects</button>
-                        <button className="hover:text-white transition-colors">Templates</button>
+                        <button onClick={() => setPrompt(history[0]?.description || "")} className="hover:text-white transition-colors">Recently viewed</button>
+                        <button onClick={() => router.push('/library')} className="hover:text-white transition-colors">My projects</button>
+                        <button onClick={() => router.push('/templates')} className="hover:text-white transition-colors">Templates</button>
                     </div>
                 </section>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-12">
-                    {stats.map((stat, i) => (
+                    {liveStats.map((stat, i) => (
                         <motion.div
                             key={i}
                             initial={{ opacity: 0, y: 10 }}
