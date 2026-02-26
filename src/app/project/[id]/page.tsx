@@ -36,6 +36,7 @@ import { supabase } from "@/lib/supabase";
 import JSZip from "jszip";
 import { validateIntent, sanitizeManifest, validateGuardrails, TrustReport } from "@/lib/intelligence";
 import { Sidebar } from "@/components/Sidebar";
+import { PreviewShell } from "@/components/PreviewShell";
 import Link from "next/link";
 
 function ProjectEditorContent({ params }: { params: { id: string } }) {
@@ -593,17 +594,11 @@ function ProjectEditorContent({ params }: { params: { id: string } }) {
                         </div>
                     </div>
 
-                    <div className="flex-1 relative overflow-hidden bg-white">
+                    <div className="flex-1 relative overflow-hidden bg-neutral-100">
                         {activeTab === 'preview' ? (
-                            <iframe
-                                srcDoc={
-                                    files['popup.html']
-                                        ? files['popup.html'].replace('</body>', `<style>${files['popup.css'] || ''}</style><script>${files['popup.js'] || ''}</script></body>`)
-                                        : Object.keys(files).length > 0
-                                            ? `<div style='background: #ffffff; color: #999; height: 100vh; display: flex; align-items: center; justify-content: center; font-family: sans-serif; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em;'>No popup.html</div>`
-                                            : "<div style='background: #ffffff; color: #999; height: 100vh; display: flex; align-items: center; justify-content: center; font-family: sans-serif; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em;'>Initializing Preview...</div>"
-                                }
-                                className="w-full h-full border-none bg-white"
+                            <PreviewShell
+                                files={files}
+                                targetUrl={project?.metadata?.target_url || "https://example.com"}
                             />
                         ) : (
                             <div className="flex h-full">
