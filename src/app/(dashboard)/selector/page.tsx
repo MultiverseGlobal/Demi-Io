@@ -12,8 +12,11 @@ import {
     Layout,
     Search,
     Copy,
-    Check
+    Check,
+    Trash2,
+    Edit3
 } from "lucide-react";
+import { TargetMockAmazon } from "@/lib/selector-intelligence";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
@@ -47,6 +50,26 @@ export default function SelectorPage() {
         navigator.clipboard.writeText(text);
         setCopiedIndex(index);
         setTimeout(() => setCopiedIndex(null), 2000);
+    };
+
+    const handleSelect = (newSelector: any) => {
+        setCapturedSelectors(prev => {
+            const exists = prev.find(s => s.selector === newSelector.selector);
+            if (exists) return prev.filter(s => s.selector !== newSelector.selector);
+            return [...prev, newSelector];
+        });
+    };
+
+    const handleUpdateName = (index: number, newName: string) => {
+        setCapturedSelectors(prev => {
+            const updated = [...prev];
+            updated[index] = { ...updated[index], name: newName };
+            return updated;
+        });
+    };
+
+    const handleRemoveSelector = (index: number) => {
+        setCapturedSelectors(prev => prev.filter((_, i) => i !== index));
     };
 
     const handleExport = () => {
@@ -140,59 +163,25 @@ export default function SelectorPage() {
                                 <motion.div
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
-                                    className="p-12 space-y-12 min-w-[800px]"
+                                    className="bg-neutral-50 h-full"
                                 >
-                                    {/* Simulated Amazon-like Page */}
-                                    <div className="flex gap-12">
-                                        <div className="w-1/2 aspect-square bg-white/[0.02] border border-white/5 rounded-[32px] overflow-hidden flex items-center justify-center group/img relative cursor-crosshair">
-                                            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover/img:opacity-100 transition-opacity" />
-                                            <Sparkles className="w-12 h-12 text-neutral-800" />
+                                    <TargetMockAmazon
+                                        onSelect={handleSelect}
+                                        selections={capturedSelectors}
+                                    />
+
+                                    {/* Simulation Status Bar */}
+                                    <div className="fixed bottom-12 left-1/2 -translate-x-1/2 bg-white/80 backdrop-blur-xl border border-neutral-200 px-6 py-4 rounded-3xl flex items-center gap-6 shadow-2xl z-50">
+                                        <div className="flex items-center gap-3 pr-6 border-r border-neutral-100">
+                                            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                                            <span className="text-[10px] font-black text-neutral-500 uppercase tracking-widest">Capture Active</span>
                                         </div>
-
-                                        <div className="w-1/2 space-y-8">
-                                            <div
-                                                onClick={() => setCapturedSelectors(prev => [...prev, { name: "Title", selector: "#productTitle", type: "text" }])}
-                                                className="p-4 rounded-2xl hover:bg-blue-50 border border-transparent hover:border-blue-100 cursor-crosshair transition-all group/el"
-                                            >
-                                                <h1 className="text-3xl font-black text-neutral-900 mb-2">Alpha Dynamic Pro X1</h1>
-                                                <div className="flex items-center gap-2 opacity-0 group-hover/el:opacity-100 transition-opacity">
-                                                    <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest">#productTitle</span>
-                                                </div>
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center font-black text-[10px] text-blue-600 border border-blue-100">
+                                                {capturedSelectors.length}
                                             </div>
-
-                                            <div
-                                                onClick={() => setCapturedSelectors(prev => [...prev, { name: "Price", selector: ".a-price-whole", type: "currency" }])}
-                                                className="p-4 rounded-2xl hover:bg-green-50 border border-transparent hover:border-green-100 cursor-crosshair transition-all group/price"
-                                            >
-                                                <div className="text-4xl font-black text-neutral-900 flex items-start">
-                                                    <span className="text-lg mt-1 mr-1">$</span>
-                                                    299
-                                                    <span className="text-lg mt-1 ml-1 text-neutral-400">.99</span>
-                                                </div>
-                                                <div className="flex items-center gap-2 opacity-0 group-hover/price:opacity-100 transition-opacity mt-2">
-                                                    <span className="text-[10px] font-black text-green-600 uppercase tracking-widest">.a-price-whole</span>
-                                                </div>
-                                            </div>
-
-                                            <div
-                                                onClick={() => setCapturedSelectors(prev => [...prev, { name: "Add to Cart", selector: "#add-to-cart-button", type: "action" }])}
-                                                className="p-6 bg-blue-600 text-white rounded-[24px] shadow-lg shadow-blue-600/10 font-black text-center cursor-crosshair hover:bg-blue-700 transition-all group/btn"
-                                            >
-                                                Add to Project Cart
-                                                <div className="flex items-center justify-center gap-2 opacity-0 group-hover/btn:opacity-100 transition-opacity mt-2">
-                                                    <span className="text-[10px] font-black uppercase tracking-widest text-white/50">#add-to-cart-button</span>
-                                                </div>
-                                            </div>
+                                            <span className="text-[10px] font-black text-neutral-400 uppercase tracking-widest whitespace-nowrap">Elements In Cart</span>
                                         </div>
-                                    </div>
-
-                                    {/* Injection Toast */}
-                                    <div className="bg-blue-50 border border-blue-100 p-4 rounded-2xl flex items-center justify-between shadow-sm">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-2 h-2 bg-blue-600 rounded-full animate-ping" />
-                                            <span className="text-xs font-bold text-blue-700">Demi Injected: Click any element to map its selector.</span>
-                                        </div>
-                                        <button className="text-[10px] font-black text-blue-600 px-3 py-1 bg-white border border-blue-100 rounded-lg hover:bg-blue-50 transition-colors">Configure Proxy</button>
                                     </div>
                                 </motion.div>
                             )}
@@ -216,16 +205,32 @@ export default function SelectorPage() {
                         ) : (
                             capturedSelectors.map((s, i) => (
                                 <motion.div
-                                    key={i}
+                                    key={s.selector}
                                     initial={{ opacity: 0, x: 20 }}
                                     animate={{ opacity: 1, x: 0 }}
-                                    transition={{ delay: i * 0.1 }}
+                                    exit={{ opacity: 0, x: -20 }}
                                     className="group p-5 bg-neutral-50 border border-neutral-200 rounded-3xl hover:border-blue-300 transition-all shadow-sm hover:shadow-md"
                                 >
                                     <div className="flex justify-between items-start mb-4">
-                                        <div className="space-y-1">
-                                            <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest tracking-[0.2em]">{s.type}</span>
-                                            <h4 className="text-sm font-black text-neutral-900">{s.name}</h4>
+                                        <div className="space-y-1 flex-1">
+                                            <div className="flex items-center justify-between pr-2">
+                                                <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest tracking-[0.2em]">{s.type}</span>
+                                                <button
+                                                    onClick={() => handleRemoveSelector(i)}
+                                                    className="opacity-0 group-hover:opacity-100 transition-opacity p-1 text-neutral-300 hover:text-red-500"
+                                                >
+                                                    <Trash2 className="w-3.5 h-3.5" />
+                                                </button>
+                                            </div>
+                                            <div className="flex items-center gap-2 group/title">
+                                                <input
+                                                    type="text"
+                                                    value={s.name}
+                                                    onChange={(e) => handleUpdateName(i, e.target.value)}
+                                                    className="text-sm font-black text-neutral-900 bg-transparent border-none p-0 focus:ring-0 w-full"
+                                                />
+                                                <Edit3 className="w-3 h-3 text-neutral-300 opacity-0 group-hover/title:opacity-100 transition-opacity" />
+                                            </div>
                                         </div>
                                         <button
                                             onClick={() => copyToClipboard(s.selector, i)}

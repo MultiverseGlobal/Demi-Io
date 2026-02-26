@@ -155,6 +155,25 @@ function ProjectEditorContent({ params }: { params: { id: string } }) {
         if (data) setVersions(data);
     }, [params.id]);
 
+    const getSmartSuggestions = () => {
+        const suggestions = [];
+        const fileNames = Object.keys(files);
+
+        if (fileNames.length === 0) {
+            suggestions.push({ label: "Generate basic manifest", prompt: "Generate a basic manifest.json for this extension." });
+        } else {
+            if (!files['content.js']) suggestions.push({ label: "Add content script", prompt: "Add content script for DOM manipulation." });
+            if (!files['popup.html']) suggestions.push({ label: "Create popup UI", prompt: "Create a popup.html and popup.js for the extension UI." });
+            if (!files['manifest.json']?.includes('permissions')) suggestions.push({ label: "Add permissions", prompt: "Analyze the current code and add relevant permissions to manifest.json." });
+
+            suggestions.push({ label: "Add dark mode", prompt: "Add dark mode support to the popup UI." });
+            suggestions.push({ label: "Refactor CSS", prompt: "Refactor the CSS to use a more modern, premium aesthetic." });
+            suggestions.push({ label: "Add settings", prompt: "Add an options/settings page to the extension." });
+        }
+
+        return suggestions.slice(0, 3);
+    };
+
     // Initial Load: Hydrate project and messages
     useEffect(() => {
         const fetchProject = async () => {
@@ -429,6 +448,24 @@ function ProjectEditorContent({ params }: { params: { id: string } }) {
 
                     {/* Input Area */}
                     <div className="p-4 border-t border-neutral-200 bg-white">
+                        {/* Smart Suggestions */}
+                        {!isGenerating && (
+                            <div className="flex flex-wrap gap-2 mb-4">
+                                {getSmartSuggestions().map((suggestion, i) => (
+                                    <motion.button
+                                        key={i}
+                                        initial={{ opacity: 0, y: 5 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: i * 0.1 }}
+                                        onClick={() => handleSendMessage(suggestion.prompt)}
+                                        className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 border border-blue-100/50 rounded-lg text-[10px] font-black text-blue-600 uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2"
+                                    >
+                                        <Sparkles className="w-3 h-3" />
+                                        {suggestion.label}
+                                    </motion.button>
+                                ))}
+                            </div>
+                        )}
                         <div className="relative group bg-neutral-50 border border-neutral-200 focus-within:border-blue-500/40 rounded-xl transition-all duration-200 shadow-sm">
                             <textarea
                                 value={input}
