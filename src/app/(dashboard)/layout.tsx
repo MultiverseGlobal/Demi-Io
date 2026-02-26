@@ -24,7 +24,7 @@ export default function DashboardLayout({
                 <div className="absolute inset-0 bg-background -z-10" />
 
                 {/* Search / Breadcrumb Bar (Integrated Header) */}
-                <header className="h-20 border-b border-white/5 px-8 flex items-center justify-between bg-[#0a0a0a]/80 backdrop-blur-xl z-40">
+                <header className="h-20 border-b border-neutral-100 px-8 flex items-center justify-between bg-white/80 backdrop-blur-xl z-40 shadow-sm shadow-black/[0.01]">
                     <div className="flex items-center gap-4 flex-1">
                         <div className="flex items-center gap-2 text-[10px] font-bold text-neutral-500 uppercase tracking-[0.2em]">
                             <span>Workspace</span>
@@ -43,17 +43,17 @@ export default function DashboardLayout({
                             <input
                                 type="text"
                                 placeholder="Search extensions..."
-                                className="w-64 bg-white/5 border border-white/5 rounded-xl py-2.5 pl-10 pr-4 text-xs focus:outline-none focus:border-blue-500/30 transition-all focus:w-80 outline-none"
+                                className="w-64 bg-neutral-100 border border-neutral-200 rounded-xl py-2.5 pl-10 pr-4 text-xs focus:outline-none focus:border-blue-500/30 transition-all focus:w-80 outline-none text-neutral-900 placeholder:text-neutral-400"
                             />
                         </div>
 
-                        <button className="p-2.5 rounded-xl hover:bg-white/5 text-neutral-500 hover:text-white transition-all border border-transparent hover:border-white/5">
+                        <button className="p-2.5 rounded-xl hover:bg-neutral-100 text-neutral-400 hover:text-neutral-900 transition-all border border-transparent hover:border-neutral-200">
                             <Bell className="w-5 h-5" />
                         </button>
 
                         <button
                             onClick={() => window.location.href = '/'}
-                            className="flex items-center gap-2 px-5 py-2.5 bg-white text-black rounded-xl text-xs font-black hover:bg-neutral-200 transition-all shadow-xl shadow-white/5" title="Create New Extension"
+                            className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-xl text-xs font-black hover:bg-blue-500 transition-all shadow-lg shadow-blue-600/10 active:scale-95" title="Create New Extension"
                         >
                             <Plus className="w-4 h-4" />
                             New
