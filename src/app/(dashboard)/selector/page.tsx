@@ -19,6 +19,7 @@ import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 
 export default function SelectorPage() {
+    const router = useRouter();
     const [url, setUrl] = useState("");
     const [isCapturing, setIsCapturing] = useState(false);
     const [capturedSelectors, setCapturedSelectors] = useState<any[]>([]);
