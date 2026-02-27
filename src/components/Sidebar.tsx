@@ -19,6 +19,7 @@ import {
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSubscription } from "@/hooks/useSubscription";
 import React from "react";
 
 interface SidebarItemProps {
@@ -66,6 +67,10 @@ function SidebarItem({ icon, label, href, active, isCollapsed }: SidebarItemProp
 export function Sidebar() {
     const pathname = usePathname();
     const [isHovered, setIsHovered] = React.useState(false);
+    const { is_pro, available_credits, subscription_tier, loading } = useSubscription();
+
+    const maxCredits = subscription_tier === 'pro' ? 25000 : 5000;
+    const creditPercentage = (available_credits / maxCredits) * 100;
 
     const menuItems = [
         { icon: <LayoutDashboard className="w-4 h-4" />, label: "Dashboard", href: "/dashboard" },
@@ -192,12 +197,37 @@ export function Sidebar() {
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: 10 }}
-                            className="space-y-2"
+                            className="space-y-4"
                         >
-                            <div className="p-3 bg-blue-50/50 rounded-xl border border-blue-100 group hover:border-blue-200 transition-all cursor-pointer">
-                                <p className="text-xs font-bold mb-1 group-hover:text-blue-600 transition-colors">Upgrade to Pro</p>
-                                <p className="text-[10px] text-neutral-500">Unlock more benefits</p>
-                            </div>
+                            {!is_pro ? (
+                                <Link href="/billing">
+                                    <div className="p-4 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl group hover:shadow-lg hover:shadow-blue-500/20 transition-all cursor-pointer overflow-hidden relative">
+                                        <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:scale-110 transition-transform">
+                                            <Sparkles className="w-12 h-12 text-white" />
+                                        </div>
+                                        <p className="text-xs font-black text-white mb-1 uppercase tracking-widest">Go Pro</p>
+                                        <p className="text-[10px] text-blue-100 font-medium leading-tight">Unlock specialized models and unlimited logic.</p>
+                                    </div>
+                                </Link>
+                            ) : (
+                                <div className="p-4 bg-neutral-50 rounded-2xl border border-neutral-100 space-y-3">
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-[10px] font-black text-neutral-400 uppercase tracking-widest">Compute Credits</span>
+                                        <span className="text-[10px] font-mono text-neutral-400">{available_credits.toLocaleString()}</span>
+                                    </div>
+                                    <div className="h-1.5 w-full bg-neutral-200 rounded-full overflow-hidden">
+                                        <motion.div
+                                            initial={{ width: 0 }}
+                                            animate={{ width: `${creditPercentage}%` }}
+                                            className={cn(
+                                                "h-full transition-all duration-1000",
+                                                creditPercentage > 40 ? "bg-blue-600" : creditPercentage > 15 ? "bg-yellow-500" : "bg-red-500"
+                                            )}
+                                        />
+                                    </div>
+                                    <p className="text-[9px] text-neutral-400 font-medium">Refreshes next month</p>
+                                </div>
+                            )}
                         </motion.div>
                     )}
                 </AnimatePresence>
@@ -213,7 +243,12 @@ export function Sidebar() {
                                 animate={{ opacity: 1 }}
                                 className="flex flex-col"
                             >
-                                <span className="text-xs font-bold text-neutral-900 truncate max-w-[100px]">Ben Eboh</span>
+                                <div className="flex items-center gap-1.5">
+                                    <span className="text-xs font-black text-neutral-900 truncate max-w-[80px]">Ben Eboh</span>
+                                    {is_pro && (
+                                        <span className="px-1.5 py-0.5 bg-blue-600 text-white text-[7px] font-black rounded-md uppercase tracking-tighter">Pro</span>
+                                    )}
+                                </div>
                                 <span className="text-[9px] text-green-500 font-bold uppercase tracking-widest">Online</span>
                             </motion.div>
                         )}

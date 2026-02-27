@@ -87,18 +87,21 @@ export default function SharePage({ params }: { params: { slug: string } }) {
     );
 
     return (
-        <div className="min-h-screen bg-[#0a0a0a] text-white selection:bg-blue-500/30">
+        <div className="min-h-screen bg-neutral-50 text-neutral-900 selection:bg-blue-500/30 font-sans">
             {/* Header / Nav */}
-            <nav className="h-20 border-b border-white/5 flex items-center justify-between px-8 bg-[#0a0a0a]/80 backdrop-blur-xl sticky top-0 z-50">
+            <nav className="h-20 border-b border-neutral-200 flex items-center justify-between px-8 bg-white/80 backdrop-blur-xl sticky top-0 z-50">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-600/20">
-                        <Zap className="w-6 h-6 text-white fill-current" />
+                    <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center border border-blue-100 shadow-sm">
+                        <Zap className="w-6 h-6 text-blue-600 fill-current" />
                     </div>
-                    <span className="text-xl font-black tracking-tighter">DEMI <span className="text-blue-500">IO</span></span>
+                    <span className="text-xl font-black tracking-tighter text-neutral-900">DEMI <span className="text-blue-500">IO</span></span>
                 </div>
-                <a href="/" className="px-5 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-sm font-bold transition-all">
-                    Create your own
-                </a>
+                <div className="flex items-center gap-4">
+                    <a href="/login" className="text-sm font-bold text-neutral-500 hover:text-neutral-900 transition-colors">Login</a>
+                    <a href="/" className="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-sm font-bold transition-all shadow-lg shadow-blue-600/20">
+                        Create your own
+                    </a>
+                </div>
             </nav>
 
             <main className="max-w-4xl mx-auto px-8 py-20">
@@ -114,60 +117,69 @@ export default function SharePage({ params }: { params: { slug: string } }) {
                                 <Globe className="w-3 h-3 text-blue-400" />
                                 <span className="text-[10px] font-bold text-blue-400 uppercase tracking-widest text-[10px]">Public Showcase</span>
                             </div>
-                            <h1 className="text-5xl font-black tracking-tight leading-tight">{project.name}</h1>
-                            <p className="text-xl text-neutral-400 max-w-2xl leading-relaxed">
+                            <h1 className="text-5xl font-black tracking-tight leading-tight text-neutral-900">{project.name}</h1>
+                            <p className="text-xl text-neutral-500 max-w-2xl leading-relaxed">
                                 {project.description || "A custom Chrome Extension built with Demi IO. Fully functional and manifest v3 compliant."}
                             </p>
                         </div>
-                        <button
-                            onClick={handleDownload}
-                            className="flex items-center gap-3 px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-black text-lg transition-all shadow-xl shadow-blue-600/30 active:scale-95 group"
-                        >
-                            <Download className="w-6 h-6 group-hover:scale-110 transition-transform" />
-                            Download .zip
-                        </button>
+                        <div className="flex flex-col gap-3">
+                            <button
+                                onClick={handleDownload}
+                                className="flex items-center gap-3 px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-black text-lg transition-all shadow-xl shadow-blue-600/30 active:scale-95 group"
+                            >
+                                <Download className="w-6 h-6 group-hover:scale-110 transition-transform" />
+                                Download .zip
+                            </button>
+                            <button
+                                onClick={() => window.location.href = `/?fork=${project.id}`}
+                                className="flex items-center justify-center gap-3 px-8 py-4 bg-white border border-neutral-200 hover:border-blue-200 text-neutral-900 rounded-2xl font-black text-lg transition-all shadow-sm active:scale-95 group"
+                            >
+                                <Sparkles className="w-6 h-6 text-blue-500 group-hover:rotate-12 transition-transform" />
+                                Clone & Edit
+                            </button>
+                        </div>
                     </div>
 
                     {/* Stats / Details Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         {[
-                            { label: "Manifest", value: "v3", icon: Shield, color: "text-green-400" },
-                            { label: "Files", value: Object.keys(project.latest_code).length, icon: Sparkles, color: "text-purple-400" },
-                            { label: "Version", value: "1.0.0", icon: Zap, color: "text-blue-400" }
+                            { label: "Manifest", value: "v3", icon: Shield, color: "text-green-600", bg: "bg-green-50" },
+                            { label: "Files", value: Object.keys(project.latest_code).length, icon: Sparkles, color: "text-purple-600", bg: "bg-purple-50" },
+                            { label: "Version", value: "1.0.0", icon: Zap, color: "text-blue-600", bg: "bg-blue-50" }
                         ].map((stat, i) => (
-                            <div key={i} className="p-6 bg-white/5 border border-white/10 rounded-3xl flex items-center gap-4">
-                                <div className={`p-3 bg-white/5 rounded-2xl ${stat.color}`}>
+                            <div key={i} className="p-6 bg-white border border-neutral-100 rounded-3xl flex items-center gap-4 shadow-sm">
+                                <div className={`p-3 rounded-2xl ${stat.bg} ${stat.color}`}>
                                     <stat.icon className="w-6 h-6" />
                                 </div>
                                 <div>
-                                    <div className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest">{stat.label}</div>
-                                    <div className="text-xl font-bold">{stat.value}</div>
+                                    <div className="text-[10px] font-black text-neutral-400 uppercase tracking-widest">{stat.label}</div>
+                                    <div className="text-xl font-black text-neutral-900">{stat.value}</div>
                                 </div>
                             </div>
                         ))}
                     </div>
 
                     {/* Installation Guide Integration */}
-                    <div className="p-10 bg-gradient-to-br from-blue-600/10 to-purple-600/10 border border-white/10 rounded-[40px] space-y-8">
+                    <div className="p-10 bg-white border border-neutral-100 rounded-[40px] space-y-8 shadow-sm">
                         <div className="flex items-center gap-4">
-                            <div className="p-3 bg-blue-600 text-white rounded-2xl">
-                                <Info className="w-6 h-6" />
+                            <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center border border-blue-100">
+                                <Info className="w-6 h-6 text-blue-600" />
                             </div>
-                            <h2 className="text-3xl font-black tracking-tight">Installation Guide</h2>
+                            <h2 className="text-3xl font-black tracking-tight text-neutral-900">Installation Guide</h2>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {[
                                 { step: "1", text: "Download and unzip the source folder." },
                                 { step: "2", text: "Open chrome://extensions in your browser." },
                                 { step: "3", text: "Turn on Developer mode (top right)." },
                                 { step: "4", text: "Click 'Load unpacked' and select the unzipped folder." }
                             ].map((item) => (
-                                <div key={item.step} className="flex gap-4 p-5 bg-white/5 border border-white/5 rounded-2xl items-center">
-                                    <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-black shadow-lg shadow-blue-600/20">
+                                <div key={item.step} className="flex gap-4 p-5 bg-neutral-50 border border-neutral-100 rounded-3xl items-center">
+                                    <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-black shadow-lg shadow-blue-600/20 flex-shrink-0">
                                         {item.step}
                                     </div>
-                                    <p className="text-neutral-300 font-medium">{item.text}</p>
+                                    <p className="text-neutral-600 font-bold text-sm leading-relaxed">{item.text}</p>
                                 </div>
                             ))}
                         </div>
@@ -176,14 +188,14 @@ export default function SharePage({ params }: { params: { slug: string } }) {
             </main>
 
             {/* Footer */}
-            <footer className="py-20 border-t border-white/5 text-center space-y-4">
-                <div className="flex items-center justify-center gap-3 opacity-50 grayscale">
-                    <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center">
+            <footer className="py-20 border-t border-neutral-200 text-center space-y-4">
+                <div className="flex items-center justify-center gap-3 opacity-30">
+                    <div className="w-8 h-8 bg-neutral-900 rounded-lg flex items-center justify-center">
                         <Zap className="w-4 h-4 text-white fill-current" />
                     </div>
-                    <span className="text-sm font-black tracking-tighter">DEMI <span className="text-blue-500">IO</span></span>
+                    <span className="text-sm font-black tracking-tighter text-neutral-900">DEMI <span className="text-blue-500">IO</span></span>
                 </div>
-                <p className="text-neutral-600 text-sm font-medium">Built with Demi IO - The AI Extension Factory</p>
+                <p className="text-neutral-400 text-sm font-bold uppercase tracking-widest">Built with Demi IO - The AI Extension Factory</p>
             </footer>
         </div>
     );

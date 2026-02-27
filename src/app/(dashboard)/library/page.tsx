@@ -19,6 +19,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
+import { useSubscription } from "@/hooks/useSubscription";
 
 export default function LibraryPage() {
     const [projects, setProjects] = useState<any[]>([]);
@@ -27,6 +28,7 @@ export default function LibraryPage() {
     const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
     const [activeCategory, setActiveCategory] = useState("All");
     const [activeStatus, setActiveStatus] = useState("All");
+    const { is_pro, loading: subLoading } = useSubscription();
 
     const categories = ["All", "Productivity", "E-commerce", "Social", "DevTools", "AI"];
     const statuses = ["All", "Draft", "Active", "Archived"];
@@ -84,13 +86,31 @@ export default function LibraryPage() {
                     <h1 className="text-4xl font-black tracking-tight mb-2">My Extensions</h1>
                     <p className="text-neutral-500 font-medium">Manage and deploy your high-performance extensions.</p>
                 </div>
-                <button
-                    onClick={() => window.location.href = '/'}
-                    className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-bold transition-all shadow-lg shadow-blue-600/20 active:scale-95 group"
-                >
-                    <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform" />
-                    New Project
-                </button>
+                <div className="flex flex-col items-end gap-2">
+                    <button
+                        onClick={() => {
+                            if (!is_pro && projects.length >= 3) {
+                                window.location.href = '/billing';
+                            } else {
+                                window.location.href = '/';
+                            }
+                        }}
+                        className={cn(
+                            "flex items-center gap-2 px-6 py-3 rounded-2xl font-bold transition-all shadow-lg active:scale-95 group",
+                            !is_pro && projects.length >= 3
+                                ? "bg-amber-100 text-amber-700 hover:bg-amber-200 shadow-amber-500/10 border border-amber-200"
+                                : "bg-blue-600 hover:bg-blue-500 text-white shadow-blue-600/20"
+                        )}
+                    >
+                        {!is_pro && projects.length >= 3 ? <Sparkles className="w-5 h-5 animate-pulse" /> : <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform" />}
+                        {!is_pro && projects.length >= 3 ? "Upgrade to Create" : "New Project"}
+                    </button>
+                    {!is_pro && projects.length >= 3 && (
+                        <span className="text-[10px] font-black text-amber-500 uppercase tracking-widest animate-in fade-in slide-in-from-right-2">
+                            Free tier limit reached (3/3)
+                        </span>
+                    )}
+                </div>
             </div>
 
             {/* Toolbar */}

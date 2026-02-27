@@ -28,6 +28,9 @@ export interface TrustReport {
     risks: string[];
 }
 
+import { performSafetyAudit, SafetyIssue } from './safety';
+export type { SafetyIssue };
+
 /**
  * Checks for architectural contradictions in the Intent Graph.
  * e.g., A popup trigger (onClick) shouldn't be trying to run persistent background logic 
@@ -91,27 +94,8 @@ export function sanitizeManifest(manifest: any, files: Record<string, string>): 
 
 /**
  * Checks for common Chrome Web Store rejection patterns.
+ * Delegates to the specialized safety module.
  */
-export function validateGuardrails(files: Record<string, string>): string[] {
-    const issues: string[] = [];
-    const codeContent = Object.values(files).join('\n');
-
-    for (const [name, content] of Object.entries(files)) {
-        // 1. Remote Code Execution
-        if (content.includes('eval(') || content.includes('new Function(')) {
-            issues.push(`Security Risk: ${name} contains 'eval' or 'new Function', which is banned by Chrome Web Store.`);
-        }
-
-        // 2. Unsafe dynamic scripts
-        if (content.includes("document.createElement('script')") && content.includes('.src')) {
-            issues.push(`Quality Risk: ${name} attempts to load external scripts dynamically.`);
-        }
-    }
-
-    // 3. Potential tracking / excessive data extraction (Heuristic)
-    if (codeContent.includes('fetch(') && codeContent.includes('chrome.cookies')) {
-        issues.push(`Privacy Risk: The extension accesses cookies and performs network requests simultaneously.`);
-    }
-
-    return issues;
+export function validateGuardrails(files: Record<string, string>): SafetyIssue[] {
+    return performSafetyAudit(files);
 }

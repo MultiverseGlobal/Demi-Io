@@ -2,184 +2,168 @@
 
 import { motion } from "framer-motion";
 import {
-    CreditCard,
     Check,
-    ArrowUpRight,
-    History,
-    Download
+    Zap,
+    Sparkles,
+    Shield,
+    Cpu,
+    Clock,
+    ArrowRight,
+    CreditCard
 } from "lucide-react";
-import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { useSubscription } from "@/hooks/useSubscription";
 
-const plans = [
+const tiers = [
     {
-        id: "starter",
         name: "Starter",
         price: "$0",
-        priceId: "", // Free plan
-        description: "Perfect for exploring intent compilation.",
-        features: ["5 Generates / month", "Standard Compiler", "Community Support", "Manifest v3 Only"],
-        current: true,
+        description: "Perfect for hobbyists and first-time builders.",
+        features: [
+            "5,000 Monthly Credits",
+            "3 Active projects",
+            "Visual Selector (Standard)",
+            "Community Support",
+            "Public Showcase Access"
+        ],
+        button: "Current Plan",
+        highlight: false
     },
     {
-        id: "pro",
-        name: "Pro",
+        name: "Professional",
         price: "$29",
-        priceId: "price_H5ggYyTqXwZ8jL", // Replace with real Stripe Price ID
-        description: "For serious builders who need speed.",
-        features: ["Unlimited Generates", "High-Performance Mode", "Priority Support", "Chrome & Edge Support", "Custom Templates"],
-        current: false,
-        recommended: true,
-    },
-    {
-        id: "enterprise",
-        name: "Enterprise",
-        price: "Custom",
-        priceId: "price_H5ggYyTqXwZ8jK", // Replace with real Stripe Price ID
-        description: "Scale your ideas to the entire team.",
-        features: ["Bulk Distribution", "Private Registry", "OIDC Integration", "Dedicated Support", "SLA Guarantee"],
-        current: false,
+        description: "For creators who need full agentic power.",
+        features: [
+            "25,000 Monthly Credits",
+            "Unlimited projects",
+            "Access to GPT-4o & Claude 3.5",
+            "Priority AI Intelligence",
+            "Advanced Branding & Export",
+            "Priority Support"
+        ],
+        button: "Upgrade to Pro",
+        highlight: true
     }
 ];
 
 export default function BillingPage() {
-    const [isLoading, setIsLoading] = useState<string | null>(null);
-
-    const handlePlanSelect = async (plan: typeof plans[0]) => {
-        if (plan.current || !plan.priceId) return;
-
-        setIsLoading(plan.id);
-        try {
-            const res = await fetch('/api/checkout', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ planId: plan.id, priceId: plan.priceId })
-            });
-
-            const data = await res.json();
-            if (data.url) {
-                window.location.href = data.url;
-            } else {
-                alert(data.error || 'Failed to start checkout');
-            }
-        } catch (err) {
-            console.error(err);
-            alert('Something went wrong');
-        } finally {
-            setIsLoading(null);
-        }
-    };
+    const { is_pro, available_credits, subscription_tier } = useSubscription();
 
     return (
-        <div className="space-y-12 max-w-6xl mx-auto">
+        <div className="max-w-6xl mx-auto space-y-12 pb-20">
             {/* Header */}
-            <section>
-                <h1 className="text-3xl font-black tracking-tight text-foreground mb-1 uppercase">Billing & Usage</h1>
-                <p className="text-muted-foreground text-sm font-medium italic">Manage your subscription and track your compilation credits.</p>
-            </section>
+            <div className="flex flex-col items-center text-center gap-4 py-8">
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="px-4 py-1.5 bg-blue-50 text-blue-600 rounded-full text-[10px] font-black uppercase tracking-widest border border-blue-100"
+                >
+                    Plans & Billing
+                </motion.div>
+                <h1 className="text-4xl md:text-5xl font-black tracking-tight text-neutral-900 leading-tight">
+                    Scale your agentic <br /> <span className="text-blue-600">potential.</span>
+                </h1>
+                <p className="max-w-xl text-neutral-500 font-medium">
+                    Choose the plan that fits your workflow. All plans include our core AI generation engine and Visual Selector.
+                </p>
+            </div>
+
+            {/* Current Status Card (Small) */}
+            <div className="flex justify-center">
+                <div className="flex items-center gap-6 p-1.5 bg-neutral-100 rounded-2xl border border-neutral-200">
+                    <div className="flex items-center gap-2 px-6 py-2 bg-white rounded-xl shadow-sm border border-neutral-200">
+                        <div className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
+                        <span className="text-xs font-bold text-neutral-600 uppercase tracking-widest">
+                            {subscription_tier === 'pro' ? 'Pro active' : 'Starter active'}
+                        </span>
+                    </div>
+                    <div className="flex items-center gap-2 pr-4">
+                        <CreditCard className="w-4 h-4 text-neutral-400" />
+                        <span className="text-xs font-bold text-neutral-500">
+                            {available_credits.toLocaleString()} Credits Left
+                        </span>
+                    </div>
+                </div>
+            </div>
 
             {/* Pricing Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {plans.map((plan, i) => (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto px-4">
+                {tiers.map((tier, i) => (
                     <motion.div
-                        key={i}
-                        initial={{ opacity: 0, y: 10 }}
+                        key={tier.name}
+                        initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: i * 0.1 }}
                         className={cn(
-                            "p-8 rounded-3xl flex flex-col relative overflow-hidden transition-all",
-                            plan.recommended
-                                ? "bg-card border-2 border-primary shadow-xl shadow-primary/5 scale-105 z-10"
-                                : "bg-card border border-border shadow-sm"
+                            "relative flex flex-col p-10 rounded-[40px] border transition-all duration-300",
+                            tier.highlight
+                                ? "bg-white border-blue-600 shadow-2xl shadow-blue-500/10 scale-105 z-10"
+                                : "bg-neutral-50 border-neutral-200 hover:bg-white"
                         )}
                     >
-                        {plan.recommended && (
-                            <div className="absolute top-0 right-0 p-2">
-                                <span className="text-[9px] font-black uppercase bg-primary text-white px-3 py-1 rounded-bl-xl rounded-tr-lg tracking-widest">Recommended</span>
+                        {tier.highlight && (
+                            <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1.5 bg-blue-600 text-white rounded-full text-[10px] font-black uppercase tracking-widest shadow-xl">
+                                Recommended
                             </div>
                         )}
 
-                        <div className="mb-8">
-                            <h3 className="text-lg font-black text-foreground mb-2 tracking-tight uppercase">{plan.name}</h3>
-                            <div className="flex items-baseline gap-1 mb-4">
-                                <span className="text-4xl font-black text-foreground">{plan.price}</span>
-                                <span className="text-muted-foreground font-bold text-xs uppercase tracking-widest">/mo</span>
+                        <div className="space-y-2 mb-8 text-center">
+                            <h3 className="text-xl font-black text-neutral-900">{tier.name}</h3>
+                            <div className="flex items-baseline justify-center gap-1">
+                                <span className="text-4xl font-black text-neutral-900">{tier.price}</span>
+                                <span className="text-neutral-400 font-medium text-sm">/mo</span>
                             </div>
-                            <p className="text-xs text-muted-foreground font-medium leading-relaxed italic">{plan.description}</p>
+                            <p className="text-sm text-neutral-500 font-medium">{tier.description}</p>
                         </div>
 
                         <div className="flex-1 space-y-4 mb-10">
-                            {plan.features.map((feature, fi) => (
-                                <div key={fi} className="flex gap-3 items-center">
-                                    <div className="w-4 h-4 rounded-full flex items-center justify-center text-primary bg-primary/10">
-                                        <Check className="w-2.5 h-2.5" />
+                            {tier.features.map((feature, j) => (
+                                <div key={j} className="flex items-center gap-3">
+                                    <div className={cn(
+                                        "w-5 h-5 rounded-full flex items-center justify-center shrink-0",
+                                        tier.highlight ? "bg-blue-100" : "bg-neutral-200/50"
+                                    )}>
+                                        <Check className={cn("w-3 h-3", tier.highlight ? "text-blue-600" : "text-neutral-500")} />
                                     </div>
-                                    <span className="text-xs text-muted-foreground font-medium">{feature}</span>
+                                    <span className="text-xs font-bold text-neutral-700">{feature}</span>
                                 </div>
                             ))}
                         </div>
 
-                        <button
-                            onClick={() => handlePlanSelect(plan)}
-                            disabled={isLoading !== null}
-                            className={cn(
-                                "w-full py-4 rounded-xl font-black text-xs transition-all active:scale-95 flex items-center justify-center gap-2 uppercase tracking-widest",
-                                plan.current
-                                    ? "bg-secondary text-muted-foreground cursor-default"
-                                    : plan.recommended
-                                        ? "bg-primary text-white hover:opacity-90"
-                                        : "bg-foreground text-background hover:opacity-90",
-                                isLoading === plan.id && "animate-pulse"
-                            )}
+                        <button className={cn(
+                            "w-full py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2",
+                            tier.highlight
+                                ? "bg-blue-600 text-white hover:bg-blue-500 shadow-lg shadow-blue-600/20 active:scale-95"
+                                : "bg-white border border-neutral-200 text-neutral-600 hover:bg-neutral-100 disabled:opacity-50"
+                        )}
+                            disabled={tier.name.toLowerCase() === subscription_tier}
                         >
-                            {isLoading === plan.id ? "Loading..." : plan.current ? "Current Plan" : `Select ${plan.name}`}
-                            {!plan.current && isLoading !== plan.id && <ArrowUpRight className="w-3.5 h-3.5" />}
+                            {tier.name.toLowerCase() === subscription_tier ? "Active" : tier.button}
+                            {!is_pro && tier.highlight && <ArrowRight className="w-4 h-4" />}
                         </button>
                     </motion.div>
                 ))}
             </div>
 
-            {/* Payment History */}
-            <section className="space-y-6 pt-12">
-                <div className="flex items-center justify-between px-2">
-                    <h2 className="text-sm font-black text-foreground tracking-[0.2em] uppercase flex items-center gap-2">
-                        <History className="w-4 h-4 text-primary" />
-                        Payment History
-                    </h2>
-                    <button className="text-[10px] font-bold text-muted-foreground hover:text-foreground flex items-center gap-2 uppercase tracking-widest transition-colors">
-                        Download All
-                    </button>
-                </div>
-
-                <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-sm">
+            {/* Core Benefits */}
+            <div className="pt-12 text-center space-y-8">
+                <h2 className="text-sm font-black text-neutral-400 uppercase tracking-[0.2em]">Enterprise Power for Everyone</h2>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-12 max-w-5xl mx-auto px-4">
                     {[
-                        { date: "Jan 04, 2026", amount: "$29.00", status: "Paid", invoice: "INV-2026-001" },
-                        { date: "Dec 04, 2025", amount: "$29.00", status: "Paid", invoice: "INV-2025-012" },
-                    ].map((inv, i) => (
-                        <div key={i} className={cn(
-                            "p-5 flex items-center justify-between group hover:bg-secondary/50 transition-colors",
-                            i !== 1 && "border-b border-border"
-                        )}>
-                            <div className="flex items-center gap-4">
-                                <div className="p-2.5 bg-secondary rounded-lg text-muted-foreground group-hover:text-primary transition-colors">
-                                    <CreditCard className="w-4 h-4" />
-                                </div>
-                                <div>
-                                    <p className="text-sm font-bold text-foreground tracking-tight">{inv.invoice}</p>
-                                    <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">{inv.date}</p>
-                                </div>
+                        { icon: <Shield className="w-6 h-6 text-purple-600" />, title: "Safety Audits", desc: "Every extension is scanned for malware and manifest compliance." },
+                        { icon: <Cpu className="w-6 h-6 text-blue-600" />, title: "State-of-the-Art", desc: "Access the latest vision and reasoning models directly in the browser." },
+                        { icon: <Clock className="w-6 h-6 text-orange-600" />, title: "Rapid Iteration", desc: "Build, test, and publish in a single session. No external tools needed." }
+                    ].map((benefit, i) => (
+                        <div key={i} className="space-y-4 flex flex-col items-center">
+                            <div className="w-14 h-14 bg-neutral-50 rounded-2xl flex items-center justify-center border border-neutral-100">
+                                {benefit.icon}
                             </div>
-                            <div className="flex items-center gap-8">
-                                <span className="text-sm font-black text-foreground">{inv.amount}</span>
-                                <span className="text-[9px] font-black uppercase text-green-500 bg-green-500/10 px-2 py-0.5 rounded-full border border-green-500/20">{inv.status}</span>
-                                <button className="p-2 text-muted-foreground hover:text-foreground transition-colors">
-                                    <Download className="w-3.5 h-3.5" />
-                                </button>
-                            </div>
+                            <h4 className="text-sm font-black text-neutral-900 uppercase tracking-widest">{benefit.title}</h4>
+                            <p className="text-xs text-neutral-500 font-medium leading-relaxed max-w-[200px]">{benefit.desc}</p>
                         </div>
                     ))}
                 </div>
-            </section>
+            </div>
         </div>
     );
 }
